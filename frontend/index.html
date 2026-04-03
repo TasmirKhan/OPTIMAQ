@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<title>OPTIMAQ Dashboard</title>
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+<div class="header">
+
+<h1>OPTIMAQ Resource Optimizer</h1>
+
+<p>Resource Allocation Dashboard</p>
+
+<button onclick="toggleDark()">Toggle Dark Mode</button>
+
+
+<div class="systemHealth">
+
+<h2>System Status</h2>
+
+<p id="health"></p>
+
+</div>
+
+</div>
+
+<div class="metrics"><div class="card">
+
+<h3>Smart Score</h3>
+
+<p id="smartscore">--</p>
+
+<h3>Total Capacity</h3>
+
+<p id="capacity">--</p>
+
+</div>
+
+<div class="gauge" id="gauge"></div>
+
+<div class="card">
+
+<h3>Allocation Summary</h3>
+
+<p id="summary"></p>
+
+</div>
+
+<div class="card">
+
+<h3>Total Load</h3>
+
+<p id="load">--</p>
+
+</div>
+
+<div class="card">
+
+<h3>Efficiency</h3>
+
+<p id="efficiency">--</p>
+
+</div>
+
+</div>
+
+<h2>Resource Allocation</h2>
+
+<div id="resources" class="resource-container">
+
+</div>
+
+<h2>Resource Ranking</h2>
+
+<table id="ranking">
+
+<tr>
+
+<th>Rank</th>
+<th>Resource</th>
+<th>Utilization</th>
+
+</tr>
+
+
+</table>
+
+<h2>System Activity</h2>
+
+<div class="log" id="log"></div>
+
+<h2>Task Distribution</h2>
+
+<div id="taskChart"></div>
+
+
+<h2>Bottlenecks</h2>
+
+<div id="bottlenecks" class="bottleneck">
+
+</div>
+
+<button onclick="loadData()">Load Results</button>
+
+<script src="script.js"></script>
+
+</body>
+
+</html>

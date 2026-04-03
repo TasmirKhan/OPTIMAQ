@@ -1,5 +1,7 @@
 package optimizer;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import models.Resource;
 import models.Task;
 import models.Metrics;
@@ -145,6 +147,8 @@ public class Optimizer {
 
     System.out.println("\nUNALLOCATED TASK ANALYSIS");
 
+    
+
 if(bottlenecks.isEmpty()){
 
     System.out.println("No rejected tasks");
@@ -159,6 +163,15 @@ else{
     }
 
 }
+System.out.println(
+"Efficiency Score : "+
+metrics.efficiencyScore()+" %"
+);
+
+System.out.println(
+"Smart Allocation Score : "+
+metrics.smartAllocationScore()
+);
 
 }
 
@@ -195,10 +208,97 @@ public void resourceRanking(){
 
     }
 
+    
+
+}
+
+// Task 6.5
+ public void exportToJSON(){
+
+    try{
+
+        FileWriter file = new FileWriter("../output/result.json");
+
+        Metrics metrics = new Metrics(resources);
+
+        file.write("{\n");
+
+        file.write("\"totalCapacity\":"+metrics.totalCapacity()+",\n");
+
+        file.write("\"totalLoad\":"+metrics.totalLoad()+",\n");
+
+        file.write("\"efficiency\":"+String.format("%.2f",metrics.efficiency())+",\n");
+
+        file.write("\"resources\": [\n");
+
+        for(int i=0;i<resources.size();i++){
+
+            Resource r = resources.get(i);
+
+            file.write("{");
+
+            file.write("\"id\":\""+r.getResourceId()+"\",");
+
+            file.write("\"capacity\":"+r.getCapacity()+",");
+
+            file.write("\"load\":"+r.getCurrentLoad()+",");
+
+            file.write("\"utilization\":"+String.format("%.2f",r.getUtilization())+",");
+
+            file.write("\"tasks\":[");
+
+for(int j=0;j<r.getTasks().size();j++){
+
+    file.write("\""+r.getTasks().get(j)+"\"");
+
+    if(j!=r.getTasks().size()-1)
+        file.write(",");
+
+}
+
+file.write("]");
+
+            file.write("}");
+
+            if(i!=resources.size()-1)
+                file.write(",");
+
+            file.write("\n");
+
+        }
+
+        file.write("],\n");
+
+        file.write("\"bottlenecks\":[");
+
+for(int i=0;i<bottlenecks.size();i++){
+
+    file.write("\""+bottlenecks.get(i)+"\"");
+
+    if(i!=bottlenecks.size()-1)
+        file.write(",");
+
+}
+
+file.write("]");
+        file.write("}");
+
+        file.close();
+
+        System.out.println("Results exported");
+
+    }
+
+    catch(Exception e){
+
+        System.out.println("Export failed");
+
+    }
+
 }
 
     //Task 7
-        public void run(){
+       public void run(){
 
     allocate();
 
@@ -208,7 +308,11 @@ public void resourceRanking(){
 
     resourceRanking();
 
+    exportToJSON();
+
 }
+
+
 
 }
 
