@@ -1,0 +1,50 @@
+OPTIMAQ Viva Questions
+
+Q1 What problem does OPTIMAQ solve?
+
+OPTIMAQ solves resource allocation and scheduling problems by distributing tasks efficiently.
+
+Q2 Which algorithm used?
+
+Greedy algorithm with priority scheduling.
+
+Q3 Why greedy?
+
+Because we make locally optimal allocation decisions that produce good global utilization.
+
+Q4 What data structures used?
+
+ArrayList
+Comparator sorting
+Classes
+
+Q5 What is bottleneck?
+
+Task that cannot be assigned due to insufficient resource capacity.
+
+Q6 Time complexity?
+
+O(n log n + nm)
+
+Q7 Space complexity?
+
+O(n + m)
+
+Q8 What improvements added?
+
+Priority tie breaking
+Efficiency ranking
+Task rejection analysis
+
+Q9 Real world applications?
+
+Cloud computing
+CPU scheduling
+Hospital resource management
+Load balancing systems
+
+Q10 Future scope?
+
+Database integration
+Web UI
+Machine learning prediction

@@ -1,0 +1,41 @@
+OPTIMAQ Complexity Analysis
+
+Time Complexity:
+
+Task Sorting:
+O(n log n)
+
+Resource Sorting:
+O(m log m)
+
+Allocation:
+O(n × m)
+
+Total Complexity:
+
+O(n log n + nm)
+
+Where:
+
+n = number of tasks
+m = number of resources
+
+Space Complexity:
+
+Resources storage:
+O(m)
+
+Tasks storage:
+O(n)
+
+Bottlenecks:
+O(n)
+
+Total:
+
+O(n + m)
+
+Performance Characteristics:
+
+Fast for small to medium datasets.
+Suitable for real-time scheduling systems.

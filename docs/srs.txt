@@ -1,0 +1,40 @@
+OPTIMAQ Algorithm Explanation
+
+Problem:
+
+Efficiently allocate tasks to resources without exceeding capacity.
+
+Approach:
+
+Step 1:
+Sort tasks by priority (High → Medium → Low)
+
+Step 2:
+If priorities match, larger tasks allocated first.
+
+Step 3:
+Sort resources by current load.
+
+Step 4:
+Assign task to least loaded resource.
+
+Step 5:
+If no resource can handle task → mark bottleneck.
+
+Step 6:
+Calculate utilization and efficiency.
+
+Why Greedy?
+
+Greedy ensures:
+
+Fast decisions
+Low complexity
+Practical scheduling behavior
+
+Advantages:
+
+Simple implementation
+Fast execution
+Scalable logic
+Good resource utilization

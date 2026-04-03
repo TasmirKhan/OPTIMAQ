@@ -1,0 +1,26 @@
+Execution Steps
+
+Step 1:
+Open terminal.
+
+Step 2:
+Navigate to src folder.
+
+Step 3:
+Compile:
+
+javac main/Main.java models/*.java optimizer/*.java
+
+Step 4:
+Run:
+
+java main.Main
+
+Step 5:
+Choose option:
+
+1 Sample test
+2 Custom input
+
+Step 6:
+Observe allocation results.
