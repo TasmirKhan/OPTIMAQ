@@ -1,10 +1,12 @@
 {
-"totalCapacity":60,
-"totalLoad":48,
-"efficiency":80.00,
+"totalCapacity":243,
+"totalLoad":192,
+"efficiency":79.01,
 "resources": [
-{"id":"R2","capacity":15,"load":15,"utilization":100.00,"tasks":["T1","T2"]},
-{"id":"R1","capacity":20,"load":19,"utilization":95.00,"tasks":["T6","T4"]},
-{"id":"R3","capacity":25,"load":14,"utilization":56.00,"tasks":["T3","T5"]}
+{"id":"1a","capacity":45,"load":45,"utilization":100.00,"tasks":["t1"]},
+{"id":"1d","capacity":56,"load":56,"utilization":100.00,"tasks":["t3"]},
+{"id":"1c","capacity":76,"load":56,"utilization":73.68,"tasks":["t5"]},
+{"id":"1e","capacity":32,"load":23,"utilization":71.88,"tasks":["t7"]},
+{"id":"1b","capacity":34,"load":12,"utilization":35.29,"tasks":["t2"]}
 ],
-"bottlenecks":[]}
+"bottlenecks":["t4 (Required:34)","t6 (Required:23)"]}

@@ -179,7 +179,7 @@
 
 async function loadData(){
 
-    const response = await fetch("/output/result.json");
+    const response = await fetch("../output/result.json");
 
     const data = await response.json();
 
@@ -195,6 +195,8 @@ async function loadData(){
 
     document.getElementById("smartscore").innerText =
         Math.round(data.efficiency*1.08);
+
+    document.getElementById("allocationData")
 
     // Resource cards
     let resourceDiv =
@@ -331,11 +333,17 @@ async function loadData(){
 
     document.getElementById("health").innerHTML=
 
-    "Status : "+health+
+"Status : "+health+
 
-    "<br>Overloaded Resources : "+overloaded+
+"<br>Total Resources : "+data.resources.length+
 
-    "<br>Efficiency : "+data.efficiency+"%";
+"<br>Overloaded : "+overloaded+
+
+"<br>Efficiency : "+data.efficiency+"%"+
+
+"<br>Performance Grade : "+
+(data.efficiency>85?"A":
+data.efficiency>70?"B":"C");
 
     // Activity log
     let log=document.getElementById("log");
@@ -351,6 +359,64 @@ async function loadData(){
     "Efficiency Calculated<br>"+
 
     "Dashboard Updated";
+
+    let totalTasks=0;
+
+data.resources.forEach(r=>{
+totalTasks+=r.tasks.length;
+});
+
+let failed=data.bottlenecks.length;
+
+let success=
+(totalTasks/(totalTasks+failed))*100;
+
+document.getElementById("summary").innerHTML=
+
+"Total Tasks : "+(totalTasks+failed)+
+"<br>Allocated : "+totalTasks+
+"<br>Failed : "+failed+
+"<br>Success Rate : "+success.toFixed(1)+"%";
+
+let gauge=document.getElementById("gauge");
+
+gauge.innerHTML=
+
+data.efficiency+"%"+
+"<br><small>Efficiency</small>";
+
+if(data.efficiency>85)
+
+gauge.style.borderColor="#2ecc71";
+
+else if(data.efficiency>70)
+
+gauge.style.borderColor="#f39c12";
+
+else
+
+gauge.style.borderColor="#e74c3c";
+
+let grade="B";
+
+if(data.efficiency>90)
+
+grade="A";
+
+else if(data.efficiency>75)
+
+grade="B";
+
+else
+
+grade="C";
+
+gauge.innerHTML=
+
+data.efficiency*1.08+
+
+"<br><small>Smart Score</small>";
+
 
 }
 
