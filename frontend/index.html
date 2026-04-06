@@ -8,29 +8,64 @@
 
 <link rel="stylesheet" href="style.css">
 
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 </head>
 
 <body>
 
+<!-- HEADER -->
 <div class="header">
 
 <h1>OPTIMAQ Resource Optimizer</h1>
+
+<div class="header-info">
 <p>Version 1.0 | AI Resource Optimization Engine</p>
 <p>Resource Allocation Dashboard</p>
+</div>
 
-<button onclick="toggleDark()">Toggle Dark Mode</button>
+<button class="darkBtn" onclick="toggleDark()">Dark Mode</button>
 
 </div>
 
+
+<!-- CONTROL PANEL -->
+
+<div class="controlPanel">
+
+<div class="inputPanel">
+
+<h2>Add Resource</h2>
+
+<input id="rid" placeholder="Resource Name">
+
+<input id="capacityInput" placeholder="Capacity">
+
+<input id="loadInput" placeholder="Load">
+
+<input id="tasksInput" placeholder="Tasks">
+
+<button onclick="addResource()">Add Resource</button>
+
+</div>
+
+
 <div class="systemHealth">
 
-<h2>System Health Monitor</h2>
+<h2>System Health</h2>
 
 <p id="health">Waiting for analysis...</p>
 
 </div>
 
-<div class="metrics"><div class="card">
+</div>
+
+
+<!-- KPI SECTION -->
+
+<div class="metrics">
+
+<div class="card">
 
 <h3>Smart Score</h3>
 
@@ -42,18 +77,24 @@
 
 </div>
 
-<div class="gauge" id="gauge"></div>
+
+<div class="card gaugeCard">
+
+<h3>Optimization Score</h3>
+
+<div class="gauge" id="gauge">--</div>
+
+</div>
 
 
 <div class="card">
 
 <h3>Allocation Summary</h3>
 
-<div class="allocation-summary"></div>
-
 <p id="summary"></p>
 
 </div>
+
 
 <div class="card">
 
@@ -62,6 +103,7 @@
 <p id="load">--</p>
 
 </div>
+
 
 <div class="card">
 
@@ -73,11 +115,21 @@
 
 </div>
 
+
+<!-- RESOURCES -->
+
+<div class="section">
+
 <h2>Resource Allocation</h2>
 
-<div id="resources" class="resource-container">
+<div id="resources" class="resource-container"></div>
 
 </div>
+
+
+<!-- RANKING -->
+
+<div class="section">
 
 <h2>Resource Ranking</h2>
 
@@ -91,33 +143,62 @@
 
 </tr>
 
-
 </table>
 
-<h2>System Activity</h2>
+</div>
 
-<div class="log" id="log"></div>
+
+<!-- TASKS -->
+
+<div class="section">
 
 <h2>Task Distribution</h2>
 
 <div id="taskChart"></div>
 
+</div>
+
+
+<!-- BOTTLENECKS -->
+
+<div class="section">
 
 <h2>Bottlenecks</h2>
 
-<div id="bottlenecks" class="bottleneck">
+<div id="bottlenecks" class="bottleneck"></div>
 
 </div>
 
-<button onclick="loadData()">Load Results</button>
+
+<!-- LOG -->
+
+<div class="section">
+
+<h2>System Activity</h2>
+
+<div class="log" id="log"></div>
+
+</div>
+
+
+<!-- ACTION -->
+
+<div class="actionPanel">
+
+<button onclick="loadData()">Run Optimization</button>
+
+</div>
+
+
+<footer>
+
+<p>OPTIMAQ v1.0 | Developed by Tasmir Khan</p>
+
+</footer>
+
 
 <script src="script.js"></script>
 
 </body>
-<footer>
-
-<p>Developed by Tasmir Khan</p>
-
-</footer>
 
 </html>

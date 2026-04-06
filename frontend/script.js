@@ -175,7 +175,66 @@
 // "Resources Processed : "+data.resources.length+"<br>"+
 // "Efficiency Calculated<br>"+
 // "Allocation Completed";
+let resources=[];
+function addResource(){
 
+let id=document.getElementById("rid").value;
+
+let capacity=parseInt(
+document.getElementById("capacityInput").value);
+
+let load=parseInt(
+document.getElementById("loadInput").value);
+
+let tasks=document
+.getElementById("tasksInput")
+.value.split(",");
+
+let utilization=(load/capacity)*100;
+
+resources.push({
+
+id:id,
+
+capacity:capacity,
+
+load:load,
+
+tasks:tasks,
+
+utilization:utilization.toFixed(1)
+
+});
+
+updateDashboard();
+
+}
+
+
+function updateDashboard(){
+
+let data={
+
+resources:resources,
+
+totalCapacity:
+resources.reduce((a,b)=>a+b.capacity,0),
+
+totalLoad:
+resources.reduce((a,b)=>a+b.load,0),
+
+efficiency:Math.round(
+(resources.reduce((a,b)=>a+b.load,0)/
+resources.reduce((a,b)=>a+b.capacity,0))*100
+),
+
+bottlenecks:[]
+
+};
+
+renderDashboard(data);
+
+}
 
 async function loadData(){
 
@@ -380,42 +439,32 @@ document.getElementById("summary").innerHTML=
 
 let gauge=document.getElementById("gauge");
 
-gauge.innerHTML=
+let smartScore=Math.round(data.efficiency*1.08);
 
-data.efficiency+"%"+
-"<br><small>Efficiency</small>";
+let grade="C";
 
-if(data.efficiency>85)
-
-gauge.style.borderColor="#2ecc71";
-
-else if(data.efficiency>70)
-
-gauge.style.borderColor="#f39c12";
-
-else
-
-gauge.style.borderColor="#e74c3c";
-
-let grade="B";
-
-if(data.efficiency>90)
-
+if(smartScore>90)
 grade="A";
 
-else if(data.efficiency>75)
-
+else if(smartScore>75)
 grade="B";
 
-else
+if(smartScore>85)
+gauge.style.borderColor="#22c55e";
 
-grade="C";
+else if(smartScore>70)
+gauge.style.borderColor="#f59e0b";
+
+else
+gauge.style.borderColor="#ef4444";
 
 gauge.innerHTML=
 
-data.efficiency*1.08+
+smartScore+
 
-"<br><small>Smart Score</small>";
+"<br><small>Smart Score</small>"+
+
+"<br><small>Grade "+grade+"</small>";
 
 
 }
