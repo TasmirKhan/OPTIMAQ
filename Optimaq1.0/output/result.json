@@ -1,0 +1,9 @@
+{
+"totalCapacity":57,
+"totalLoad":24,
+"efficiency":42.11,
+"resources": [
+{"id":"r2","capacity":23,"load":12,"utilization":52.17,"tasks":["t2","t3"]},
+{"id":"r1","capacity":34,"load":12,"utilization":35.29,"tasks":["t1"]}
+],
+"bottlenecks":["t4 (Required:24)"]}
