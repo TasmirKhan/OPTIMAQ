@@ -1,181 +1,7 @@
-// async function loadData(){
-
-//     const response = await fetch("/output/result.json");
-
-//     const data = await response.json();
-
-//     document.getElementById("capacity").innerText =
-//         data.totalCapacity;
-
-//     document.getElementById("load").innerText =
-//         data.totalLoad;
-
-//     document.getElementById("efficiency").innerText =
-//         data.efficiency+" %";
-
-//     let resourceDiv =
-//         document.getElementById("resources");
-
-//     resourceDiv.innerHTML="";
-
-//     data.resources.forEach(r => {
-
-//         let card = document.createElement("div");
-
-//         card.className="resource";
-
-//         let color="low";
-
-// let status="Optimal";
-
-// if(r.utilization>85)
-// status="Critical";
-
-// else if(r.utilization>80)
-// color="high";
-
-// else if(r.utilization>60)
-// status="Moderate";
-
-// else if(r.utilization>50)
-// color="medium";
-
-// card.innerHTML=
-
-// "<h3>"+r.id+"</h3>"+
-
-// "<p><b>Status:</b> "+status+"</p>"+
-
-// "<p><b>Capacity:</b> "+r.capacity+"</p>"+
-
-// "<p><b>Load:</b> "+r.load+"</p>"+
-
-// "<p><b>Utilization:</b> "+r.utilization+"%</p>"+
-
-// "<div class='progress'>"+
-
-// "<div class='bar "+color+"' style='width:"+r.utilization+"%'></div>"+
-
-// "</div>"+
-
-// "<p><b>Tasks:</b> "+r.tasks+"</p>";
-//         resourceDiv.appendChild(card);
-//     });
-
-//     let bottleneckDiv =
-// document.getElementById("bottlenecks");
-
-// if(data.bottlenecks.length===0){
-
-// bottleneckDiv.innerHTML="No bottlenecks detected";
-
-// }
-// else{
-
-// bottleneckDiv.innerHTML=
-// "<b>Unallocated Tasks:</b><br>"+
-// data.bottlenecks;
-
-// }
-
-// document.getElementById("smartscore").innerText =
-// Math.round((data.efficiency*0.7)+30);
-// }
-
-// function toggleDark(){
-
-// document.body.classList.toggle("dark");
-
-// }
-
-// let overloaded=0;
-
-// data.resources.forEach(r=>{
-
-// if(r.utilization>85)
-// overloaded++;
-
-// });
-
-// let health="HEALTHY";
-
-// if(overloaded>=2)
-// health="CRITICAL";
-
-// else if(overloaded==1)
-// health="MODERATE";
-
-// document.getElementById("health").innerHTML=
-
-// "Status : "+health+
-// "<br>Overloaded Resources : "+overloaded;
-
-
-// let sorted=[...data.resources];
-
-// sorted.sort((a,b)=>b.utilization-a.utilization);
-
-// let table=document.getElementById("ranking");
-
-// sorted.forEach((r,i)=>{
-
-// let row=table.insertRow();
-
-// row.insertCell(0).innerText=i+1;
-
-// row.insertCell(1).innerText=r.id;
-
-// row.insertCell(2).innerText=r.utilization+" %";
-
-// });
-
-// let totalTasks=0;
-
-// data.resources.forEach(r=>{
-
-// totalTasks+=r.tasks.length;
-
-// });
-
-// let failed=data.bottlenecks.length;
-
-// let success=totalTasks/(totalTasks+failed)*100;
-
-// document.getElementById("summary").innerHTML=
-
-// "Total Tasks : "+(totalTasks+failed)+
-// "<br>Allocated : "+totalTasks+
-// "<br>Failed : "+failed+
-// "<br>Success Rate : "+success.toFixed(1)+"%";
-
-// document.getElementById("gauge").innerText=
-// data.efficiency+"%";
-
-// let chart=document.getElementById("taskChart");
-
-// data.resources.forEach(r=>{
-
-// let div=document.createElement("div");
-
-// div.className="barChart";
-
-// div.style.width=(r.tasks.length*40)+"px";
-
-// div.innerText=r.id+" : "+r.tasks.length;
-
-// chart.appendChild(div);
-
-// });
-
-// let log=document.getElementById("log");
-
-// log.innerHTML=
-
-// "System Loaded<br>"+
-// "Resources Processed : "+data.resources.length+"<br>"+
-// "Efficiency Calculated<br>"+
-// "Allocation Completed";
 let resources=[];
+
+/* ADD RESOURCE */
+
 function addResource(){
 
 let id=document.getElementById("rid").value;
@@ -186,15 +12,17 @@ document.getElementById("capacityInput").value);
 let load=parseInt(
 document.getElementById("loadInput").value);
 
-let tasks=
-document
+let tasks=document
 .getElementById("tasksInput")
 .value
 .split(",")
 .map(t=>t.trim())
 .filter(t=>t!="");
 
-let utilization=(load/capacity)*100;
+if(!id || !capacity || load==null) return;
+
+let utilization=
+capacity>0 ? (load/capacity)*100 : 0;
 
 resources.push({
 
@@ -210,6 +38,8 @@ utilization:utilization.toFixed(1)
 
 });
 
+/* clear inputs */
+
 document.getElementById("rid").value="";
 document.getElementById("capacityInput").value="";
 document.getElementById("loadInput").value="";
@@ -220,81 +50,81 @@ loadDataFromMemory();
 }
 
 
-function updateDashboard(){
+/* MASTER RENDER ENGINE */
 
-let data={
+function renderAll(data){
 
-resources:resources,
+/* KPIs */
 
-totalCapacity:
-resources.reduce((a,b)=>a+b.capacity,0),
+document.getElementById("capacity").innerText=
+data.totalCapacity;
 
-totalLoad:
-resources.reduce((a,b)=>a+b.load,0),
+document.getElementById("load").innerText=
+data.totalLoad;
 
-efficiency:Math.round(
-(resources.reduce((a,b)=>a+b.load,0)/
-resources.reduce((a,b)=>a+b.capacity,0))*100
-),
+document.getElementById("efficiency").innerText=
+data.efficiency+" %";
 
-bottlenecks:[]
+let smartScore=
+Math.round(data.efficiency*1.08);
 
-};
+document.getElementById("smartscore").innerText=
+smartScore;
 
-renderDashboard(data);
+
+let potential=
+
+Math.min(
+100,
+data.efficiency+
+(Math.random()*8)
+.toFixed(1)
+);
+
+let suggest=
+document.getElementById("aiSuggestions");
+
+if(suggest){
+
+suggest.innerHTML=
+
+"Potential efficiency after optimization: <b>"+
+
+potential+
+
+"%</b>";
 
 }
+/* RESOURCE CARDS */
 
-async function loadData(){
+let resourceDiv=
+document.getElementById("resources");
 
-    const response = await fetch("../output/result.json");
+resourceDiv.innerHTML="";
 
-    const data = await response.json();
+data.resources.forEach(r=>{
 
-    // Metrics
-    document.getElementById("capacity").innerText =
-        data.totalCapacity;
+let color="low";
 
-    document.getElementById("load").innerText =
-        data.totalLoad;
+if(r.utilization>80)
+color="high";
 
-    document.getElementById("efficiency").innerText =
-        data.efficiency+" %";
+else if(r.utilization>50)
+color="medium";
 
-    document.getElementById("smartscore").innerText =
-        Math.round(data.efficiency*1.08);
+let status="Optimal";
 
-    document.getElementById("allocationData")
+if(r.utilization>85)
+status="Critical";
 
-    // Resource cards
-    let resourceDiv =
-        document.getElementById("resources");
+else if(r.utilization>60)
+status="Moderate";
 
-    resourceDiv.innerHTML="";
+let card=document.createElement("div");
 
-    data.resources.forEach(r=>{
+card.className="resource";
 
-        let color="low";
-
-        if(r.utilization>80)
-            color="high";
-
-        else if(r.utilization>50)
-            color="medium";
-
-        let status="Optimal";
-
-        if(r.utilization>85)
-            status="Critical";
-
-        else if(r.utilization>60)
-            status="Moderate";
-
-        let card=document.createElement("div");
-
-        card.className="resource";
-
-        card.innerHTML=
+card.innerHTML=
 
 "<div class='resourceHeader'>"+
 
@@ -312,7 +142,7 @@ async function loadData(){
 
 "</div>"+
 
-"<p><b>Status:</b> "+status+"</p>"+
+"<p>Status: <span class='status "+status+"'>"+status+"</span></p>"+
 
 "<p><b>Capacity:</b> "+r.capacity+"</p>"+
 
@@ -328,130 +158,164 @@ async function loadData(){
 "</div>"+
 
 "<p><b>Tasks:</b> "+r.tasks+"</p>";
-    });
 
-    // Resource ranking
-    let table=document.getElementById("ranking");
+resourceDiv.appendChild(card);
 
-    table.innerHTML=
+})
 
-    "<tr><th>Rank</th><th>Resource</th><th>Utilization</th></tr>";
+let ctx=
+document
+.getElementById("utilChart");
 
-    let sorted=[...data.resources];
+if(ctx){
 
-    sorted.sort((a,b)=>b.utilization-a.utilization);
+let labels=
+data.resources.map(r=>r.id);
 
-    sorted.forEach((r,i)=>{
+let values=
+data.resources.map(r=>
+parseFloat(r.utilization)
+);
 
-        let row=table.insertRow();
+if(window.chart)
+window.chart.destroy();
 
-        row.insertCell(0).innerText=i+1;
+window.chart=
+new Chart(ctx,{
 
-        row.insertCell(1).innerText=r.id;
+type:'bar',
 
-        row.insertCell(2).innerText=r.utilization+" %";
+data:{
 
-    });
+labels:labels,
 
-    // Bottlenecks
-    let bottleneckDiv =
-        document.getElementById("bottlenecks");
+datasets:[{
 
-    if(data.bottlenecks.length===0){
+label:
+'Utilization %',
 
-        bottleneckDiv.innerHTML=
+data:values,
 
-"<span style='color:#22c55e;font-weight:bold'>✓ System optimal</span>";
+backgroundColor:
 
-    }
+values.map(v=>
 
-    else{
+v>85 ? '#ef4444' :
 
-        bottleneckDiv.innerHTML=
-        data.bottlenecks;
+v>60 ? '#f59e0b' :
 
-    }
+'#22c55e'
 
-    // Task distribution
-    let chart=document.getElementById("taskChart");
+)
 
-    chart.innerHTML="";
+}]
 
-    data.resources.forEach(r=>{
+},
 
-        let bar=document.createElement("div");
+options:{
 
-        bar.className="barChart";
+responsive:true,
 
-        bar.style.width=
-        (r.tasks.length*60)+"px";
+plugins:{
 
-        bar.innerText=
-        r.id+" : "+r.tasks.length+" tasks";
+legend:{
+display:false
+}
 
-        chart.appendChild(bar);
+},
 
-    });
+scales:{
 
-    // System health
-    let overloaded=0;
+y:{
+beginAtZero:true,
+max:100
+}
 
-    data.resources.forEach(r=>{
+}
 
-        if(r.utilization>85)
-            overloaded++;
+}
 
-    });
+});
 
-    let health="HEALTHY";
+}
+;
 
-    if(overloaded>=2)
-        health="CRITICAL";
 
-    else if(overloaded==1)
-        health="MODERATE";
+/* RANKING */
 
-    
+let table=
+document.getElementById("ranking");
+
+table.innerHTML=
+
+"<tr><th>Rank</th><th>Resource</th><th>Utilization</th></tr>";
+
+let sorted=[...data.resources];
+
+sorted.sort((a,b)=>b.utilization-a.utilization);
+
+sorted.forEach((r,i)=>{
+
+let row=table.insertRow();
+
+row.insertCell(0).innerText=i+1;
+
+row.insertCell(1).innerText=r.id;
+
+row.insertCell(2).innerText=r.utilization+" %";
+
+});
+
+
+/* TASK CHART */
+
+let chart=
+document.getElementById("taskChart");
+
+chart.innerHTML="";
+
+data.resources.forEach(r=>{
+
+let bar=document.createElement("div");
+
+bar.className="barChart";
+
+bar.style.width=
+(r.tasks.length*60)+"px";
+
+bar.innerText=
+r.id+" : "+r.tasks.length+" tasks";
+
+chart.appendChild(bar);
+
+});
+
+
+/* SYSTEM HEALTH */
+
+let overloaded=0;
+
+let idle=0;
 
 data.resources.forEach(r=>{
 
 if(r.utilization>85)
-overloadedCount++;
+overloaded++;
 
 if(r.utilization<40)
-idleCount++;
+idle++;
 
 });
 
-if(overloadedCount>0)
-insights.push(
-overloadedCount+" resources overloaded"
-);
+let health="HEALTHY";
 
-if(idleCount>0)
-insights.push(
-idleCount+" underutilized resources"
-);
+if(overloaded>=2)
+health="CRITICAL";
 
-if(data.efficiency<75)
-insights.push(
-"Efficiency improvement possible"
-);
+else if(overloaded==1)
+health="MODERATE";
 
-if(insights.length===0)
-insights.push(
-"System running optimally"
-);
-
-let ai=document.getElementById("aiInsights");
-
-ai.innerHTML="";
-
-insights.forEach(i=>{
-
-ai.innerHTML+="● "+i+"<br>";
-
-});
+document.getElementById("health").innerHTML=
 
 "Status : "+health+
 
@@ -462,45 +326,99 @@ ai.innerHTML+="● "+i+"<br>";
 "<br>Efficiency : "+data.efficiency+"%"+
 
 "<br>Performance Grade : "+
+
 (data.efficiency>85?"A":
 data.efficiency>70?"B":"C");
 
-    // Activity log
-    let log=document.getElementById("log");
 
-    log.innerHTML=
+/* AI INSIGHTS */
 
-"● System initialized<br>"+
+let insights=[];
 
-"● Resources processed : "+data.resources.length+"<br>"+
+if(overloaded>0)
+insights.push(overloaded+" resources overloaded");
 
-"● Tasks allocated<br>"+
+if(idle>0)
+insights.push(idle+" underutilized resources");
 
-"● Efficiency calculated<br>"+
+if(data.efficiency<75)
+insights.push("Efficiency improvement possible");
 
-"● Optimization ready";
+if(insights.length==0)
+insights.push("System running optimally");
 
-    let totalTasks=0;
+let ai=
+document.getElementById("aiInsights");
 
-data.resources.forEach(r=>{
-totalTasks+=r.tasks.length;
+if(ai){
+
+ai.innerHTML="";
+
+insights.forEach(i=>{
+
+ai.innerHTML+="● "+i+"<br>";
+
 });
 
-let failed=data.bottlenecks.length;
+}
+
+
+/* BOTTLENECKS */
+
+let bottleneckDiv=
+document.getElementById("bottlenecks");
+
+if(data.bottlenecks.length==0){
+
+bottleneckDiv.innerHTML=
+
+"<span style='color:#22c55e;font-weight:bold'>✓ System optimal</span>";
+
+}
+
+else{
+
+bottleneckDiv.innerHTML=
+data.bottlenecks;
+
+}
+
+
+/* SUMMARY */
+
+let totalTasks=0;
+
+data.resources.forEach(r=>{
+
+totalTasks+=r.tasks.length;
+
+});
+
+let failed=
+data.bottlenecks.length;
 
 let success=
-(totalTasks/(totalTasks+failed))*100;
+totalTasks>0 ?
+
+(totalTasks/(totalTasks+failed))*100
+
+:0;
 
 document.getElementById("summary").innerHTML=
 
 "Total Tasks : "+(totalTasks+failed)+
+
 "<br>Allocated : "+totalTasks+
+
 "<br>Failed : "+failed+
+
 "<br>Success Rate : "+success.toFixed(1)+"%";
 
-let gauge=document.getElementById("gauge");
 
-let smartScore=Math.round(data.efficiency*1.08);
+/* GAUGE */
+
+let gauge=
+document.getElementById("gauge");
 
 let grade="C";
 
@@ -528,13 +446,78 @@ smartScore+
 "<br><small>Grade "+grade+"</small>";
 
 
+/* ACTIVITY LOG */
+
+let log=
+document.getElementById("log");
+
+log.innerHTML=
+
+"● System initialized<br>"+
+
+"● Resources processed : "+data.resources.length+"<br>"+
+
+"● Tasks allocated<br>"+
+
+"● Efficiency calculated<br>"+
+
+"● Optimization ready";
+
 }
 
-function toggleDark(){
 
-    document.body.classList.toggle("dark");
+/* MEMORY DATA */
+
+function loadDataFromMemory(){
+
+let totalCap=
+resources.reduce((a,b)=>a+b.capacity,0);
+
+let totalLoad=
+resources.reduce((a,b)=>a+b.load,0);
+
+let efficiency=
+totalCap>0 ?
+
+Math.round((totalLoad/totalCap)*100)
+
+:0;
+
+let data={
+
+resources:resources,
+
+totalCapacity:totalCap,
+
+totalLoad:totalLoad,
+
+efficiency:efficiency,
+
+bottlenecks:[]
+
+};
+
+renderAll(data);
 
 }
+
+
+/* FILE DATA */
+
+async function loadData(){
+
+const response=
+await fetch("../output/result.json");
+
+const data=
+await response.json();
+
+renderAll(data);
+
+}
+
+
+/* MENU */
 
 function toggleMenu(btn){
 
@@ -546,33 +529,8 @@ menu.classList.toggle("showMenu");
 
 }
 
-function loadDataFromMemory(){
 
-let data={
-
-resources:resources,
-
-totalCapacity:
-resources.reduce((a,b)=>a+b.capacity,0),
-
-totalLoad:
-resources.reduce((a,b)=>a+b.load,0),
-
-efficiency:
-resources.length>0 ?
-
-Math.round(
-(resources.reduce((a,b)=>a+b.load,0)/
-resources.reduce((a,b)=>a+b.capacity,0))*100
-) : 0,
-
-bottlenecks:[]
-
-};
-
-renderAll(data);
-
-}
+/* DELETE */
 
 function deleteResource(id){
 
@@ -581,11 +539,123 @@ resources.filter(r=>r.id!==id);
 
 loadDataFromMemory();
 
+showToast("Resource deleted","danger");
+
 }
+
+
+/* OPTIMIZE */
 
 function optimizeResource(id){
 
-alert("AI recommends optimization for "+id);
+showToast(
+"Optimization suggested for "+id,
+"warning"
+);
 
 }
 
+
+/* DARK MODE */
+
+function toggleDark(){
+
+document.body.classList.toggle("dark");
+
+let isDark=
+document.body.classList.contains("dark");
+
+localStorage.setItem(
+"optimaqTheme",
+isDark ? "dark" : "light"
+);
+
+}
+
+function filterResources(){
+
+let value=
+document
+.getElementById("searchResource")
+.value
+.toLowerCase();
+
+let cards=
+document.querySelectorAll(".resource");
+
+cards.forEach(card=>{
+
+let name=
+card.querySelector("h3")
+.innerText
+.toLowerCase();
+
+if(name.includes(value))
+
+card.style.display="block";
+
+else
+
+card.style.display="none";
+
+});
+
+}
+
+function exportReport(){
+
+let text=
+
+"OPTIMAQ REPORT\n\n"+
+
+"Resources: "+resources.length+"\n"+
+
+"Efficiency: "+
+document.getElementById("efficiency").innerText;
+
+let blob=
+new Blob([text],
+{type:"text/plain"});
+
+let a=
+document.createElement("a");
+
+a.href=
+URL.createObjectURL(blob);
+
+a.download=
+"optimaq_report.txt";
+
+a.click();
+
+}
+
+window.onload=function(){
+
+let savedTheme=
+localStorage.getItem("optimaqTheme");
+
+if(savedTheme==="dark")
+
+document.body.classList.add("dark");
+
+}
+
+function showToast(message,type="success"){
+
+let toast=
+document.getElementById("toast");
+
+toast.innerText=message;
+
+toast.className="showToast "+type;
+
+setTimeout(()=>{
+
+toast.className="";
+
+},2500);
+
+}
+
+showToast("Resource added");
