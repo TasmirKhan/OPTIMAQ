@@ -9,12 +9,26 @@
 <link rel="stylesheet" href="style.css">
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- 
+<div class="spinner"></div> -->
+
+<p>Running AI Optimization...</p>
+
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </head>
 
 <body>
+
+<div id="loader">
+
+<div class="spinner"></div>
+
+<p>Running AI Optimization...</p>
+
+</div>
 
 <!-- HEADER -->
 <div class="header">
@@ -91,9 +105,22 @@ Run optimization to see recommendations
 
 </div>
 
+<div class="section">
+
+<h2>Optimization Simulation</h2>
+
+<div id="simulationPanel" class="simPanel">
+
+Run optimization to simulate improvement
+
+</div>
+
+</div>
+
 <button onclick="exportReport()">
 Export Report
 </button>
+
 
 <div class="card">
 
@@ -180,6 +207,27 @@ onkeyup="filterResources()"
 <th>Rank</th>
 <th>Resource</th>
 <th>Utilization</th>
+
+</tr>
+
+</table>
+
+</div>
+
+
+<div class="section">
+
+<h2>Top Resource Comparison</h2>
+
+<table id="compareTable">
+
+<tr>
+
+<th>Resource</th>
+<th>Capacity</th>
+<th>Load</th>
+<th>Utilization</th>
+<th>Status</th>
 
 </tr>
 

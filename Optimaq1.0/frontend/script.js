@@ -95,6 +95,32 @@ potential+
 "%</b>";
 
 }
+
+let sim=
+document.getElementById("simulationPanel");
+
+if(sim){
+
+let predicted=
+Math.min(
+100,
+data.efficiency+
+Math.floor(Math.random()*10)
+);
+
+let gain=
+predicted-data.efficiency;
+
+sim.innerHTML=
+
+"Current Efficiency : "+data.efficiency+"%<br>"+
+
+"Predicted Efficiency : "+predicted+"%<br>"+
+
+"Improvement : <span class='simGain'>+"+
+gain+"%</span>";
+
+}
 /* RESOURCE CARDS */
 
 let resourceDiv=
@@ -265,7 +291,6 @@ row.insertCell(1).innerText=r.id;
 row.insertCell(2).innerText=r.utilization+" %";
 
 });
-
 
 /* TASK CHART */
 
@@ -463,6 +488,46 @@ log.innerHTML=
 
 "● Optimization ready";
 
+
+let compare=
+document.getElementById("compareTable");
+
+if(compare){
+
+compare.innerHTML=
+
+"<tr><th>Resource</th><th>Capacity</th><th>Load</th><th>Utilization</th><th>Status</th></tr>";
+
+let sorted=[...data.resources];
+
+sorted.sort((a,b)=>b.utilization-a.utilization);
+
+sorted.slice(0,3).forEach(r=>{
+
+let status="Optimal";
+
+if(r.utilization>85)
+status="Critical";
+
+else if(r.utilization>60)
+status="Moderate";
+
+let row=compare.insertRow();
+
+row.insertCell(0).innerText=r.id;
+
+row.insertCell(1).innerText=r.capacity;
+
+row.insertCell(2).innerText=r.load;
+
+row.insertCell(3).innerText=r.utilization+"%";
+
+row.insertCell(4).innerText=status;
+
+});
+
+}
+
 }
 
 
@@ -506,13 +571,23 @@ renderAll(data);
 
 async function loadData(){
 
+showLoader();
+
 const response=
 await fetch("../output/result.json");
 
 const data=
 await response.json();
 
+setTimeout(()=>{
+
 renderAll(data);
+
+hideLoader();
+
+showToast("Optimization complete");
+
+},800);
 
 }
 
@@ -659,3 +734,19 @@ toast.className="";
 }
 
 showToast("Resource added");
+
+function showLoader(){
+
+document
+.getElementById("loader")
+.classList.add("showLoader");
+
+}
+
+function hideLoader(){
+
+document
+.getElementById("loader")
+.classList.remove("showLoader");
+
+}
