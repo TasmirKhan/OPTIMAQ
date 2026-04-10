@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Login - OPTIMAQ</title>
+    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="login-page">
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-cogs"></i>
+                <span>OPTIMAQ</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="resources.html"><i class="fas fa-server"></i> Resources</a></li>
+                <li><a href="analytics.html"><i class="fas fa-chart-line"></i> Analytics</a></li>
+                <li><a href="about.html"><i class="fas fa-info-circle"></i> About</a></li>
+            </ul>
+            <div class="nav-actions">
+                <a id="authButton" class="nav-auth" href="login.html"><i class="fas fa-sign-in-alt"></i> Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page-header">
+        <h1>Welcome back to OPTIMAQ</h1>
+        <p>Secure access to the resource optimization dashboard.</p>
+    </div>
+
+    <div class="login-card">
+        <div class="login-illustration">
+            <i class="fas fa-lock"></i>
+            <h2>Login to continue</h2>
+        </div>
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <input id="username" class="input-field" type="text" placeholder="Username" required autocomplete="username">
+            <input id="password" class="input-field" type="password" placeholder="Password" required autocomplete="current-password">
+            <button type="submit" class="btn-primary"><i class="fas fa-sign-in-alt"></i> Sign In</button>
+            <p class="login-note">Use <strong>admin</strong> / <strong>optimaq123</strong> to log in.</p>
+        </form>
+    </div>
+
+    <div id="toast"></div>
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (isUserLoggedIn()) {
+                window.location.href = 'dashboard.html';
+                return;
+            }
+            renderAuthButton();
+        });
+    </script>
+</body>
+</html>

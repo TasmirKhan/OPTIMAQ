@@ -22,6 +22,9 @@
                 <li><a href="analytics.html"><i class="fas fa-chart-line"></i> Analytics</a></li>
                 <li><a href="about.html"><i class="fas fa-info-circle"></i> About</a></li>
             </ul>
+            <div class="nav-actions">
+                <a id="authButton" class="nav-auth" href="login.html"><i class="fas fa-sign-in-alt"></i> Login</a>
+            </div>
             <button class="darkBtn" onclick="toggleDark()"><i class="fas fa-moon"></i> Dark Mode</button>
         </div>
     </nav>
@@ -146,6 +149,53 @@
             });
         }
 
+        function fetchDefaultResources() {
+            fetch('output/result.json')
+                .then(response => response.json())
+                .then(data => {
+                    if (Array.isArray(data.resources) && data.resources.length > 0) {
+                        resources = data.resources.map(r => ({
+                            id: r.id,
+                            capacity: Number(r.capacity) || 0,
+                            load: Number(r.load) || 0,
+                            tasks: Array.isArray(r.tasks) ? r.tasks : [],
+                            utilization: Number(r.utilization) || 0
+                        }));
+            if (resources.length === 0) {
+                fetchDefaultResources();
+            }
+                        saveResourcesToStorage();
+                        updateResourceStats();
+                        renderResourcesList();
+                    }
+                })
+                .catch(() => {
+                    console.warn('No default resource data available');
+                });
+        }
+
+        function fetchDefaultResources() {
+            fetch('output/result.json')
+                .then(response => response.json())
+                .then(data => {
+                    if (Array.isArray(data.resources) && data.resources.length > 0) {
+                        resources = data.resources.map(r => ({
+                            id: r.id,
+                            capacity: Number(r.capacity) || 0,
+                            load: Number(r.load) || 0,
+                            tasks: Array.isArray(r.tasks) ? r.tasks : [],
+                            utilization: Number(r.utilization) || 0
+                        }));
+                        saveResourcesToStorage();
+                        updateResourceStats();
+                        renderResourcesList();
+                    }
+                })
+                .catch(() => {
+                    console.warn('No default resource data available');
+                });
+        }
+
         // Override the global loadDataFromMemory to also update the resources page
         const originalLoadDataFromMemory = loadDataFromMemory;
         loadDataFromMemory = function() {
@@ -156,7 +206,11 @@
 
         // Load resources on page load
         document.addEventListener('DOMContentLoaded', function() {
+            requireLogin();
             loadResourcesFromStorage();
+            if (resources.length === 0) {
+                fetchDefaultResources();
+            }
             updateResourceStats();
             renderResourcesList();
         });

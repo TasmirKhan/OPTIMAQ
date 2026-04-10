@@ -22,6 +22,9 @@
                 <li><a href="analytics.html"><i class="fas fa-chart-line"></i> Analytics</a></li>
                 <li><a href="about.html"><i class="fas fa-info-circle"></i> About</a></li>
             </ul>
+            <div class="nav-actions">
+                <a id="authButton" class="nav-auth" href="login.html"><i class="fas fa-sign-in-alt"></i> Login</a>
+            </div>
             <button class="darkBtn" onclick="toggleDark()"><i class="fas fa-moon"></i> Dark Mode</button>
         </div>
     </nav>
@@ -97,7 +100,8 @@
             <!-- System Health -->
             <div class="dashboard-card">
                 <h3><i class="fas fa-heartbeat"></i> System Health</h3>
-                <div class="health-panel" id="healthPanel">Waiting for analysis...</div>
+                <div class="health-panel" id="health">Waiting for analysis...</div>
+                <div id="summary" class="summary-panel">Summary will appear here.</div>
             </div>
 
             <!-- Key Metrics -->
@@ -105,15 +109,15 @@
                 <h3><i class="fas fa-chart-line"></i> Key Metrics</h3>
                 <div class="metrics-grid">
                     <div class="metric">
-                        <div class="metric-value" id="metric-capacity">--</div>
+                        <div class="metric-value" id="capacity">--</div>
                         <div class="metric-label">Total Capacity</div>
                     </div>
                     <div class="metric">
-                        <div class="metric-value" id="metric-load">--</div>
+                        <div class="metric-value" id="load">--</div>
                         <div class="metric-label">Total Load</div>
                     </div>
                     <div class="metric">
-                        <div class="metric-value" id="metric-efficiency">--</div>
+                        <div class="metric-value" id="efficiency">--</div>
                         <div class="metric-label">Efficiency</div>
                     </div>
                 </div>
@@ -243,6 +247,7 @@
     <script>
         // Dashboard specific initialization
         document.addEventListener('DOMContentLoaded', function() {
+            requireLogin();
             loadResourcesFromStorage();
             loadDataFromMemory();
         });

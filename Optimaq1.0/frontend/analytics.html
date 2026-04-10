@@ -22,6 +22,9 @@
                 <li><a href="analytics.html" class="active"><i class="fas fa-chart-line"></i> Analytics</a></li>
                 <li><a href="about.html"><i class="fas fa-info-circle"></i> About</a></li>
             </ul>
+            <div class="nav-actions">
+                <a id="authButton" class="nav-auth" href="login.html"><i class="fas fa-sign-in-alt"></i> Login</a>
+            </div>
             <button class="darkBtn" onclick="toggleDark()"><i class="fas fa-moon"></i> Dark Mode</button>
         </div>
     </nav>
@@ -124,7 +127,7 @@
                 renderAnalytics(data);
             } else {
                 // Try to fetch from result.json
-                fetch("../output/result.json")
+                fetch("output/result.json")
                     .then(response => response.json())
                     .then(data => {
                         localStorage.setItem('optimaq_last_optimization', JSON.stringify(data));
@@ -205,6 +208,7 @@
 
         // Load analytics on page load
         document.addEventListener('DOMContentLoaded', function() {
+            requireLogin();
             updateAnalytics();
         });
     </script>

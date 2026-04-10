@@ -1,6 +1,8 @@
 let resources = [];
+const AUTH_KEY = 'optimaq_logged_in';
+const LAST_OPTIMIZATION_KEY = 'optimaq_last_optimization';
 
-// Load resources from localStorage on page load
+// Load resources from localStorage
 function loadResourcesFromStorage() {
     const stored = localStorage.getItem('optimaq_resources');
     if (stored) {
@@ -13,21 +15,76 @@ function saveResourcesToStorage() {
     localStorage.setItem('optimaq_resources', JSON.stringify(resources));
 }
 
-// Initialize on page load
-window.onload = function() {
+function isUserLoggedIn() {
+    return localStorage.getItem(AUTH_KEY) === 'true';
+}
+
+function requireLogin() {
+    if (!isUserLoggedIn()) {
+        window.location.href = 'login.html';
+    }
+}
+
+function loginUser(username, password) {
+    const validUsername = 'admin';
+    const validPassword = 'optimaq123';
+
+    if (username === validUsername && password === validPassword) {
+        localStorage.setItem(AUTH_KEY, 'true');
+        showToast('Login successful', 'success');
+        window.location.href = 'dashboard.html';
+        return true;
+    }
+
+    showToast('Invalid credentials', 'danger');
+    return false;
+}
+
+function handleLogin(event) {
+    event.preventDefault();
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+    loginUser(username, password);
+}
+
+function logoutUser() {
+    localStorage.removeItem(AUTH_KEY);
+    localStorage.removeItem(LAST_OPTIMIZATION_KEY);
+    window.location.href = 'login.html';
+}
+
+function renderAuthButton() {
+    const authButton = document.getElementById('authButton');
+    if (!authButton) {
+        return;
+    }
+
+    if (isUserLoggedIn()) {
+        authButton.innerHTML = '<i class="fas fa-sign-out-alt"></i> Logout';
+        authButton.href = 'javascript:void(0)';
+        authButton.onclick = logoutUser;
+    } else {
+        authButton.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
+        authButton.href = 'login.html';
+        authButton.onclick = null;
+    }
+}
+
+function initGlobal() {
     loadResourcesFromStorage();
-    loadDataFromMemory();
+    renderAuthButton();
 
-    let savedTheme = localStorage.getItem("optimaqTheme");
-    if (savedTheme === "dark") {
-        document.body.classList.add("dark");
+    let savedTheme = localStorage.getItem('optimaqTheme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark');
     }
 
-    // Show initial toast if resources exist
     if (resources.length > 0) {
-        showToast(`Loaded ${resources.length} resources from storage`, "success");
+        showToast(`Loaded ${resources.length} resources from storage`, 'success');
     }
-};
+}
+
+document.addEventListener('DOMContentLoaded', initGlobal);
 
 /* ADD RESOURCE */
 function addResource() {
@@ -76,14 +133,13 @@ function renderAll(data){
 
 /* KPIs */
 
-document.getElementById("capacity").innerText=
-data.totalCapacity;
+const capacityEl = document.getElementById("capacity") || document.getElementById("metric-capacity");
+const loadEl = document.getElementById("load") || document.getElementById("metric-load");
+const efficiencyEl = document.getElementById("efficiency") || document.getElementById("metric-efficiency");
 
-document.getElementById("load").innerText=
-data.totalLoad;
-
-document.getElementById("efficiency").innerText=
-data.efficiency+" %";
+if (capacityEl) capacityEl.innerText = data.totalCapacity;
+if (loadEl) loadEl.innerText = data.totalLoad;
+if (efficiencyEl) efficiencyEl.innerText = data.efficiency + " %";
 
 let smartScore=
 Math.round(data.efficiency*1.08);
@@ -360,20 +416,17 @@ health="CRITICAL";
 else if(overloaded==1)
 health="MODERATE";
 
-document.getElementById("health").innerHTML=
-
-"Status : "+health+
-
-"<br>Total Resources : "+data.resources.length+
-
-"<br>Overloaded : "+overloaded+
-
-"<br>Efficiency : "+data.efficiency+"%"+
-
-"<br>Performance Grade : "+
-
-(data.efficiency>85?"A":
-data.efficiency>70?"B":"C");
+const healthEl = document.getElementById("health") || document.getElementById("healthPanel");
+if (healthEl) {
+    healthEl.innerHTML=
+    "Status : "+health+
+    "<br>Total Resources : "+data.resources.length+
+    "<br>Overloaded : "+overloaded+
+    "<br>Efficiency : "+data.efficiency+"%"+
+    "<br>Performance Grade : "+
+    (data.efficiency>85?"A":
+    data.efficiency>70?"B":"C");
+}
 
 
 /* AI INSIGHTS */
@@ -449,15 +502,14 @@ totalTasks>0 ?
 
 :0;
 
-document.getElementById("summary").innerHTML=
-
-"Total Tasks : "+(totalTasks+failed)+
-
-"<br>Allocated : "+totalTasks+
-
-"<br>Failed : "+failed+
-
-"<br>Success Rate : "+success.toFixed(1)+"%";
+const summaryEl = document.getElementById("summary");
+if (summaryEl) {
+    summaryEl.innerHTML=
+    "Total Tasks : "+(totalTasks+failed)+
+    "<br>Allocated : "+totalTasks+
+    "<br>Failed : "+failed+
+    "<br>Success Rate : "+success.toFixed(1)+"%";
+}
 
 
 /* GAUGE */
@@ -592,10 +644,21 @@ async function loadData() {
     showLoader();
 
     try {
-        const response = await fetch("../output/result.json");
+        const response = await fetch("output/result.json");
         const data = await response.json();
 
-        // Save fetched data to localStorage for persistence
+        // Persist the loaded resource dataset so all pages can use it
+        if (Array.isArray(data.resources)) {
+            resources = data.resources.map(r => ({
+                id: r.id,
+                capacity: Number(r.capacity) || 0,
+                load: Number(r.load) || 0,
+                tasks: Array.isArray(r.tasks) ? r.tasks : [],
+                utilization: Number(r.utilization) || 0
+            }));
+            saveResourcesToStorage();
+        }
+
         localStorage.setItem('optimaq_last_optimization', JSON.stringify(data));
 
         setTimeout(() => {
@@ -644,12 +707,28 @@ function deleteResource(id) {
 /* OPTIMIZE */
 
 function optimizeResource(id){
+    const resource = resources.find(r => r.id === id);
+    if (!resource) {
+        showToast("Resource not found", "danger");
+        return;
+    }
 
-showToast(
-"Optimization suggested for "+id,
-"warning"
-);
+    const currentUtil = parseFloat(resource.utilization);
+    let newLoad = resource.load;
 
+    if (currentUtil > 85) {
+        newLoad = Math.max(0, Math.round(resource.capacity * 0.85));
+    } else if (currentUtil < 60) {
+        newLoad = Math.min(resource.capacity, Math.round(resource.capacity * 0.65));
+    } else {
+        newLoad = Math.round(resource.capacity * 0.75);
+    }
+
+    resource.load = newLoad;
+    resource.utilization = resource.capacity > 0 ? ((newLoad / resource.capacity) * 100).toFixed(1) : 0;
+    saveResourcesToStorage();
+    loadDataFromMemory();
+    showToast("Resource " + id + " optimized successfully", "success");
 }
 
 
@@ -723,19 +802,9 @@ function clearAllData() {
     }
 }
 
-window.onload = function(){
-    loadResourcesFromStorage();
+function refreshDashboard() {
     loadDataFromMemory();
-
-    let savedTheme = localStorage.getItem("optimaqTheme");
-    if(savedTheme === "dark") {
-        document.body.classList.add("dark");
-    }
-
-    // Show initial toast if resources exist
-    if (resources.length > 0) {
-        showToast(`Loaded ${resources.length} resources from storage`, "success");
-    }
+    showToast("Dashboard refreshed", "success");
 }
 
 function showToast(message,type="success"){
@@ -754,8 +823,6 @@ toast.className="";
 },2500);
 
 }
-
-showToast("Resource added");
 
 function showLoader(){
 
