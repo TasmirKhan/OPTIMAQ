@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Resources - OPTIMAQ</title>
+    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-cogs"></i>
+                <span>OPTIMAQ</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="resources.html" class="active"><i class="fas fa-server"></i> Resources</a></li>
+                <li><a href="analytics.html"><i class="fas fa-chart-line"></i> Analytics</a></li>
+                <li><a href="about.html"><i class="fas fa-info-circle"></i> About</a></li>
+            </ul>
+            <button class="darkBtn" onclick="toggleDark()"><i class="fas fa-moon"></i> Dark Mode</button>
+        </div>
+    </nav>
+
+    <div class="page-header">
+        <h1><i class="fas fa-server"></i> Resource Management</h1>
+        <p>Manage and monitor your system resources</p>
+    </div>
+
+    <div class="container">
+        <!-- Add Resource Form -->
+        <div class="resource-form">
+            <h2><i class="fas fa-plus-circle"></i> Add New Resource</h2>
+            <div class="form-grid">
+                <input id="rid" placeholder="Resource Name" type="text">
+                <input id="capacityInput" placeholder="Capacity" type="number">
+                <input id="loadInput" placeholder="Load" type="number">
+                <input id="tasksInput" placeholder="Tasks (comma-separated)" type="text">
+                <button onclick="addResource()" class="btn-primary">
+                    <i class="fas fa-plus"></i> Add Resource
+                </button>
+            </div>
+        </div>
+
+        <!-- Resource Stats -->
+        <div class="stats-section">
+            <div class="stat-card">
+                <i class="fas fa-server"></i>
+                <div>
+                    <h3 id="totalResources">0</h3>
+                    <p>Total Resources</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-check-circle"></i>
+                <div>
+                    <h3 id="activeResources">0</h3>
+                    <p>Active Resources</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div>
+                    <h3 id="overloadedResources">0</h3>
+                    <p>Overloaded</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resource List -->
+        <div class="resource-list">
+            <div class="resourceHeaderBar">
+                <h2><i class="fas fa-list"></i> Resource List</h2>
+                <input id="searchResource" placeholder="Search resources..." onkeyup="filterResources()">
+            </div>
+            <div id="resources" class="resource-container"></div>
+        </div>
+
+        <!-- Resource Details Modal (placeholder) -->
+        <div id="resourceModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Resource Details</h2>
+                <div id="resourceDetails"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast"></div>
+    <script src="script.js"></script>
+    <script>
+        // Resources page specific functions
+        function updateResourceStats() {
+            const totalResources = resources.length;
+            const activeResources = resources.filter(r => parseFloat(r.utilization) > 0).length;
+            const overloadedResources = resources.filter(r => parseFloat(r.utilization) > 85).length;
+
+            document.getElementById('totalResources').innerText = totalResources;
+            document.getElementById('activeResources').innerText = activeResources;
+            document.getElementById('overloadedResources').innerText = overloadedResources;
+        }
+
+        function renderResourcesList() {
+            const container = document.getElementById('resources');
+            container.innerHTML = '';
+
+            if (resources.length === 0) {
+                container.innerHTML = '<p style="text-align: center; padding: 40px; color: #64748b;">No resources added yet. Add some resources to get started!</p>';
+                return;
+            }
+
+            resources.forEach(r => {
+                let color = "low";
+                if (parseFloat(r.utilization) > 80) color = "high";
+                else if (parseFloat(r.utilization) > 50) color = "medium";
+
+                let status = "Optimal";
+                if (parseFloat(r.utilization) > 85) status = "Critical";
+                else if (parseFloat(r.utilization) > 60) status = "Moderate";
+
+                let card = document.createElement("div");
+                card.className = "resource";
+                card.innerHTML = `
+                    <div class='resourceHeader'>
+                        <h3>${r.id}</h3>
+                        <div class='menuBtn' onclick='toggleMenu(this)'>⋮</div>
+                    </div>
+                    <div class='menuDropdown'>
+                        <div onclick='optimizeResource("${r.id}")'>Optimize</div>
+                        <div onclick='deleteResource("${r.id}")'>Delete</div>
+                    </div>
+                    <p>Status: <span class='status ${status}'>${status}</span></p>
+                    <p><b>Capacity:</b> ${r.capacity}</p>
+                    <p><b>Load:</b> ${r.load}</p>
+                    <p><b>Utilization:</b> ${r.utilization}%</p>
+                    <div class='progress'>
+                        <div class='bar ${color}' style='width:${r.utilization}%'></div>
+                    </div>
+                    <p><b>Tasks:</b> ${r.tasks.length}</p>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Override the global loadDataFromMemory to also update the resources page
+        const originalLoadDataFromMemory = loadDataFromMemory;
+        loadDataFromMemory = function() {
+            originalLoadDataFromMemory();
+            updateResourceStats();
+            renderResourcesList();
+        };
+
+        // Load resources on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadResourcesFromStorage();
+            updateResourceStats();
+            renderResourcesList();
+        });
+    </script>
+</body>
+</html>

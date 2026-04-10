@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Analytics - OPTIMAQ</title>
+    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-cogs"></i>
+                <span>OPTIMAQ</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="resources.html"><i class="fas fa-server"></i> Resources</a></li>
+                <li><a href="analytics.html" class="active"><i class="fas fa-chart-line"></i> Analytics</a></li>
+                <li><a href="about.html"><i class="fas fa-info-circle"></i> About</a></li>
+            </ul>
+            <button class="darkBtn" onclick="toggleDark()"><i class="fas fa-moon"></i> Dark Mode</button>
+        </div>
+    </nav>
+
+    <div class="page-header">
+        <h1><i class="fas fa-chart-line"></i> Analytics Dashboard</h1>
+        <p>Deep insights into resource utilization and performance</p>
+    </div>
+
+    <div class="container">
+        <!-- Chart Controls -->
+        <div class="chart-controls">
+            <button onclick="loadData()" class="btn-primary">
+                <i class="fas fa-sync"></i> Refresh Data
+            </button>
+            <select id="chartType">
+                <option value="bar">Bar Chart</option>
+                <option value="line">Line Chart</option>
+                <option value="pie">Pie Chart</option>
+            </select>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3><i class="fas fa-chart-bar"></i> Resource Utilization</h3>
+                <canvas id="utilChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3><i class="fas fa-tasks"></i> Task Distribution</h3>
+                <div id="taskChart"></div>
+            </div>
+            <div class="chart-card">
+                <h3><i class="fas fa-clock"></i> Performance Over Time</h3>
+                <canvas id="performanceChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3><i class="fas fa-balance-scale"></i> Efficiency Trends</h3>
+                <canvas id="efficiencyChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Analytics Summary -->
+        <div class="analytics-summary">
+            <h2><i class="fas fa-lightbulb"></i> Key Insights</h2>
+            <div class="insights-grid">
+                <div class="insight-card">
+                    <i class="fas fa-trophy"></i>
+                    <h4>Top Performer</h4>
+                    <p id="topPerformer">Loading...</p>
+                </div>
+                <div class="insight-card">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h4>Critical Resources</h4>
+                    <p id="criticalCount">Loading...</p>
+                </div>
+                <div class="insight-card">
+                    <i class="fas fa-chart-line"></i>
+                    <h4>Average Utilization</h4>
+                    <p id="avgUtilization">Loading...</p>
+                </div>
+                <div class="insight-card">
+                    <i class="fas fa-rocket"></i>
+                    <h4>Optimization Potential</h4>
+                    <p id="optimizationPotential">Loading...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="data-table-section">
+            <h2><i class="fas fa-table"></i> Detailed Analytics</h2>
+            <table id="analyticsTable">
+                <thead>
+                    <tr>
+                        <th>Resource</th>
+                        <th>Capacity</th>
+                        <th>Load</th>
+                        <th>Utilization</th>
+                        <th>Efficiency</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="analyticsBody">
+                    <!-- Data will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="toast"></div>
+    <script src="script.js"></script>
+    <script>
+        // Analytics specific functions
+        function updateAnalytics() {
+            // Load data from localStorage or fetch
+            const cached = localStorage.getItem('optimaq_last_optimization');
+            if (cached) {
+                const data = JSON.parse(cached);
+                renderAnalytics(data);
+            } else {
+                // Try to fetch from result.json
+                fetch("../output/result.json")
+                    .then(response => response.json())
+                    .then(data => {
+                        localStorage.setItem('optimaq_last_optimization', JSON.stringify(data));
+                        renderAnalytics(data);
+                    })
+                    .catch(error => {
+                        console.error('Error loading analytics data:', error);
+                        showToast("No analytics data available", "warning");
+                    });
+            }
+        }
+
+        function renderAnalytics(data) {
+            // Update insights
+            const topPerformer = data.resources.reduce((max, r) =>
+                parseFloat(r.utilization) > parseFloat(max.utilization) ? r : max, data.resources[0]);
+
+            const criticalCount = data.resources.filter(r => parseFloat(r.utilization) > 85).length;
+            const avgUtilization = (data.resources.reduce((sum, r) => sum + parseFloat(r.utilization), 0) / data.resources.length).toFixed(1);
+            const optimizationPotential = Math.max(0, 100 - data.efficiency);
+
+            document.getElementById('topPerformer').innerText = topPerformer ? `${topPerformer.id} (${topPerformer.utilization}%)` : 'N/A';
+            document.getElementById('criticalCount').innerText = criticalCount;
+            document.getElementById('avgUtilization').innerText = `${avgUtilization}%`;
+            document.getElementById('optimizationPotential').innerText = `${optimizationPotential}%`;
+
+            // Update analytics table
+            const tableBody = document.getElementById('analyticsBody');
+            tableBody.innerHTML = '';
+
+            data.resources.forEach(r => {
+                const row = tableBody.insertRow();
+                row.insertCell(0).innerText = r.id;
+                row.insertCell(1).innerText = r.capacity;
+                row.insertCell(2).innerText = r.load;
+                row.insertCell(3).innerText = r.utilization + '%';
+                row.insertCell(4).innerText = ((r.load / r.capacity) * 100).toFixed(1) + '%';
+                row.insertCell(5).innerText = parseFloat(r.utilization) > 85 ? 'Critical' :
+                                             parseFloat(r.utilization) > 60 ? 'Moderate' : 'Optimal';
+            });
+
+            // Update charts if they exist
+            updateCharts(data);
+        }
+
+        function updateCharts(data) {
+            // Update utilization chart
+            const utilChart = document.getElementById('utilChart');
+            if (utilChart && window.Chart) {
+                const ctx = utilChart.getContext('2d');
+                const labels = data.resources.map(r => r.id);
+                const values = data.resources.map(r => parseFloat(r.utilization));
+
+                if (window.utilChartInstance) {
+                    window.utilChartInstance.destroy();
+                }
+
+                window.utilChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Utilization %',
+                            data: values,
+                            backgroundColor: values.map(v =>
+                                v > 85 ? '#ef4444' : v > 60 ? '#f59e0b' : '#22c55e'
+                            )
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true, max: 100 } }
+                    }
+                });
+            }
+        }
+
+        // Load analytics on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateAnalytics();
+        });
+    </script>
+</body>
+</html>

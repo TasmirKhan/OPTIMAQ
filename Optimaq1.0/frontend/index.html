@@ -1,300 +1,161 @@
 <!DOCTYPE html>
-
-<html>
-
+<html lang="en">
 <head>
-
-<title>OPTIMAQ Dashboard</title>
-
-<link rel="stylesheet" href="style.css">
-
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- 
-<div class="spinner"></div> -->
-
-<p>Running AI Optimization...</p>
-
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+    <title>OPTIMAQ - AI Resource Optimizer</title>
+    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-
 <body>
-
-<div id="loader">
-
-<div class="spinner"></div>
-
-<p>Running AI Optimization...</p>
-
-</div>
-
-<!-- HEADER -->
-<div class="header">
-
-<h1>OPTIMAQ Resource Optimizer</h1>
-
-<div class="header-info">
-<p>Version 1.0 | AI Resource Optimization Engine</p>
-<p>Resource Allocation Dashboard</p>
-</div>
-
-<button class="darkBtn" onclick="toggleDark()">Dark Mode</button>
-
-</div>
-
-
-<!-- CONTROL PANEL -->
-
-<div class="controlPanel">
-
-<div class="inputPanel">
-
-<h2>Add Resource</h2>
-
-<input id="rid" placeholder="Resource Name">
-
-<input id="capacityInput" placeholder="Capacity">
-
-<input id="loadInput" placeholder="Load">
-
-<input id="tasksInput" placeholder="Tasks">
-
-<button onclick="addResource()">Add Resource</button>
-
-</div>
-
-
-<div class="systemHealth">
-
-<h2>System Health</h2>
-
-<p id="health">Waiting for analysis...</p>
-
-</div>
-
-</div>
-
-
-<!-- KPI SECTION -->
-
-<div class="metrics">
-
-<div class="section">
-
-<h2>AI Insights</h2>
-
-<div id="aiInsights" class="aiPanel">
-
-Waiting for analysis...
-
-</div>
-
-<div class="section">
-
-<h2>Optimization Suggestions</h2>
-
-<div id="aiSuggestions" class="suggestPanel">
-
-Run optimization to see recommendations
-
-</div>
-
-</div>
-
-</div>
-
-<div class="section">
-
-<h2>Optimization Simulation</h2>
-
-<div id="simulationPanel" class="simPanel">
-
-Run optimization to simulate improvement
-
-</div>
-
-</div>
-
-<button onclick="exportReport()">
-Export Report
-</button>
-
-
-<div class="card">
-
-<h3>Smart Score</h3>
-
-<p id="smartscore">--</p>
-
-<h3>Total Capacity</h3>
-
-<p id="capacity">--</p>
-
-</div>
-
-
-<div class="card gaugeCard">
-
-<h3>Optimization Score</h3>
-
-<div class="gauge" id="gauge">--</div>
-
-</div>
-
-
-<div class="card">
-
-<h3>Allocation Summary</h3>
-
-<p id="summary"></p>
-
-</div>
-
-
-<div class="card">
-
-<h3>Total Load</h3>
-
-<p id="load">--</p>
-
-</div>
-
-
-<div class="card">
-
-<h3>Efficiency</h3>
-
-<p id="efficiency">--</p>
-
-</div>
-
-</div>
-
-
-<!-- RESOURCES -->
-
-<div class="section">
-
-<div class="resourceHeaderBar">
-
-<h2>Resource Allocation</h2>
-
-<input 
-id="searchResource"
-placeholder="Search resource..."
-onkeyup="filterResources()"
->
-
-</div>
-
-<div id="resources" class="resource-container"></div>
-
-</div>
-
-
-<!-- RANKING -->
-
-<div class="section">
-
-<h2>Resource Ranking</h2>
-
-<table id="ranking">
-
-<tr>
-
-<th>Rank</th>
-<th>Resource</th>
-<th>Utilization</th>
-
-</tr>
-
-</table>
-
-</div>
-
-
-<div class="section">
-
-<h2>Top Resource Comparison</h2>
-
-<table id="compareTable">
-
-<tr>
-
-<th>Resource</th>
-<th>Capacity</th>
-<th>Load</th>
-<th>Utilization</th>
-<th>Status</th>
-
-</tr>
-
-</table>
-
-</div>
-
-
-<!-- TASKS -->
-
-<div class="section">
-
-<h2>Task Distribution</h2>
-
-<div id="taskChart"></div>
-
-</div>
-
-<div class="section">
-
-<h2>Resource Utilization Analytics</h2>
-
-<canvas id="utilChart"></canvas>
-
-</div>
-
-
-<!-- BOTTLENECKS -->
-
-<div class="section">
-
-<h2>Bottlenecks</h2>
-
-<div id="bottlenecks" class="bottleneck"></div>
-
-</div>
-
-
-<!-- LOG -->
-
-<div class="section">
-
-<h2>System Activity</h2>
-
-<div class="log" id="log"></div>
-
-</div>
-
-
-<!-- ACTION -->
-
-<div class="actionPanel">
-
-<button onclick="loadData()">Run Optimization</button>
-
-</div>
-
-<div id="toast"></div>
-<footer>
-
-<p>OPTIMAQ v1.0 | Developed by Tasmir Khan</p>
-
-</footer>
-
-
-<script src="script.js"></script>
-
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-cogs"></i>
+                <span>OPTIMAQ</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="active"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="resources.html"><i class="fas fa-server"></i> Resources</a></li>
+                <li><a href="analytics.html"><i class="fas fa-chart-line"></i> Analytics</a></li>
+                <li><a href="about.html"><i class="fas fa-info-circle"></i> About</a></li>
+            </ul>
+            <button class="darkBtn" onclick="toggleDark()"><i class="fas fa-moon"></i> Dark Mode</button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <span class="gradient-text">AI-Powered Resource Optimization</span>
+            </h1>
+            <p class="hero-subtitle">Maximize efficiency with intelligent resource allocation and real-time analytics</p>
+            <div class="hero-buttons">
+                <a href="dashboard.html" class="btn-primary">
+                    <i class="fas fa-play"></i> Start Optimization
+                </a>
+                <a href="#features" class="btn-secondary">
+                    <i class="fas fa-info"></i> Learn More
+                </a>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="floating-elements">
+                <div class="floating-card card-1">
+                    <i class="fas fa-brain"></i>
+                    <span>AI Insights</span>
+                </div>
+                <div class="floating-card card-2">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Analytics</span>
+                </div>
+                <div class="floating-card card-3">
+                    <i class="fas fa-cogs"></i>
+                    <span>Optimization</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <h2 class="section-title">Powerful Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h3>AI Optimization</h3>
+                    <p>Advanced algorithms analyze and optimize resource allocation in real-time</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <h3>Real-time Analytics</h3>
+                    <p>Comprehensive dashboards with live data visualization and insights</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Smart Monitoring</h3>
+                    <p>Continuous system health monitoring with predictive bottleneck detection</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-users-cog"></i>
+                    </div>
+                    <h3>Resource Management</h3>
+                    <p>Intuitive interface for managing resources, tasks, and allocations</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">99.9%</div>
+                    <div class="stat-label">Uptime</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">50%</div>
+                    <div class="stat-label">Avg Efficiency Gain</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Monitoring</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">AI</div>
+                    <div class="stat-label">Powered</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container">
+            <h2>Ready to Optimize Your Resources?</h2>
+            <p>Join thousands of organizations maximizing efficiency with OPTIMAQ</p>
+            <a href="dashboard.html" class="btn-primary large">
+                <i class="fas fa-rocket"></i> Get Started Now
+            </a>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <i class="fas fa-cogs"></i>
+                    <span>OPTIMAQ v1.0</span>
+                </div>
+                <div class="footer-links">
+                    <a href="about.html">About</a>
+                    <a href="help.html">Help</a>
+                    <a href="contact.html">Contact</a>
+                </div>
+                <div class="footer-social">
+                    <a href="#"><i class="fab fa-github"></i></a>
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 OPTIMAQ. Developed by Tasmir Khan. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
 </body>
-
 </html>

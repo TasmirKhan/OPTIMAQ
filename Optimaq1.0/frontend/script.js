@@ -1,52 +1,72 @@
-let resources=[];
+let resources = [];
+
+// Load resources from localStorage on page load
+function loadResourcesFromStorage() {
+    const stored = localStorage.getItem('optimaq_resources');
+    if (stored) {
+        resources = JSON.parse(stored);
+    }
+}
+
+// Save resources to localStorage
+function saveResourcesToStorage() {
+    localStorage.setItem('optimaq_resources', JSON.stringify(resources));
+}
+
+// Initialize on page load
+window.onload = function() {
+    loadResourcesFromStorage();
+    loadDataFromMemory();
+
+    let savedTheme = localStorage.getItem("optimaqTheme");
+    if (savedTheme === "dark") {
+        document.body.classList.add("dark");
+    }
+
+    // Show initial toast if resources exist
+    if (resources.length > 0) {
+        showToast(`Loaded ${resources.length} resources from storage`, "success");
+    }
+};
 
 /* ADD RESOURCE */
+function addResource() {
+    let id = document.getElementById("rid").value;
+    let capacity = parseInt(document.getElementById("capacityInput").value);
+    let load = parseInt(document.getElementById("loadInput").value);
+    let tasks = document.getElementById("tasksInput").value.split(",").map(t => t.trim()).filter(t => t != "");
 
-function addResource(){
+    if (!id || !capacity || load == null) {
+        showToast("Please fill all required fields", "warning");
+        return;
+    }
 
-let id=document.getElementById("rid").value;
+    // Check if resource already exists
+    if (resources.some(r => r.id === id)) {
+        showToast("Resource with this ID already exists", "warning");
+        return;
+    }
 
-let capacity=parseInt(
-document.getElementById("capacityInput").value);
+    let utilization = capacity > 0 ? (load / capacity) * 100 : 0;
 
-let load=parseInt(
-document.getElementById("loadInput").value);
+    resources.push({
+        id: id,
+        capacity: capacity,
+        load: load,
+        tasks: tasks,
+        utilization: utilization.toFixed(1)
+    });
 
-let tasks=document
-.getElementById("tasksInput")
-.value
-.split(",")
-.map(t=>t.trim())
-.filter(t=>t!="");
+    saveResourcesToStorage();
 
-if(!id || !capacity || load==null) return;
+    /* clear inputs */
+    document.getElementById("rid").value = "";
+    document.getElementById("capacityInput").value = "";
+    document.getElementById("loadInput").value = "";
+    document.getElementById("tasksInput").value = "";
 
-let utilization=
-capacity>0 ? (load/capacity)*100 : 0;
-
-resources.push({
-
-id:id,
-
-capacity:capacity,
-
-load:load,
-
-tasks:tasks,
-
-utilization:utilization.toFixed(1)
-
-});
-
-/* clear inputs */
-
-document.getElementById("rid").value="";
-document.getElementById("capacityInput").value="";
-document.getElementById("loadInput").value="";
-document.getElementById("tasksInput").value="";
-
-loadDataFromMemory();
-
+    loadDataFromMemory();
+    showToast("Resource added successfully", "success");
 }
 
 
@@ -568,27 +588,34 @@ renderAll(data);
 
 
 /* FILE DATA */
+async function loadData() {
+    showLoader();
 
-async function loadData(){
+    try {
+        const response = await fetch("../output/result.json");
+        const data = await response.json();
 
-showLoader();
+        // Save fetched data to localStorage for persistence
+        localStorage.setItem('optimaq_last_optimization', JSON.stringify(data));
 
-const response=
-await fetch("../output/result.json");
+        setTimeout(() => {
+            renderAll(data);
+            hideLoader();
+            showToast("Optimization complete", "success");
+        }, 800);
+    } catch (error) {
+        console.error('Error loading data:', error);
+        hideLoader();
+        showToast("Failed to load optimization data", "danger");
 
-const data=
-await response.json();
-
-setTimeout(()=>{
-
-renderAll(data);
-
-hideLoader();
-
-showToast("Optimization complete");
-
-},800);
-
+        // Try to load from localStorage as fallback
+        const cached = localStorage.getItem('optimaq_last_optimization');
+        if (cached) {
+            const data = JSON.parse(cached);
+            renderAll(data);
+            showToast("Loaded cached optimization data", "warning");
+        }
+    }
 }
 
 
@@ -606,16 +633,11 @@ menu.classList.toggle("showMenu");
 
 
 /* DELETE */
-
-function deleteResource(id){
-
-resources=
-resources.filter(r=>r.id!==id);
-
-loadDataFromMemory();
-
-showToast("Resource deleted","danger");
-
+function deleteResource(id) {
+    resources = resources.filter(r => r.id !== id);
+    saveResourcesToStorage();
+    loadDataFromMemory();
+    showToast("Resource deleted", "danger");
 }
 
 
@@ -678,42 +700,42 @@ card.style.display="none";
 }
 
 function exportReport(){
+    let text = "OPTIMAQ REPORT\n\n" +
+        "Resources: " + resources.length + "\n" +
+        "Efficiency: " + (document.getElementById("efficiency") ? document.getElementById("efficiency").innerText : "N/A");
 
-let text=
-
-"OPTIMAQ REPORT\n\n"+
-
-"Resources: "+resources.length+"\n"+
-
-"Efficiency: "+
-document.getElementById("efficiency").innerText;
-
-let blob=
-new Blob([text],
-{type:"text/plain"});
-
-let a=
-document.createElement("a");
-
-a.href=
-URL.createObjectURL(blob);
-
-a.download=
-"optimaq_report.txt";
-
-a.click();
-
+    let blob = new Blob([text], {type:"text/plain"});
+    let a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "optimaq_report.txt";
+    a.click();
 }
 
-window.onload=function(){
+function clearAllData() {
+    if (confirm("Are you sure you want to clear all data? This cannot be undone.")) {
+        resources = [];
+        localStorage.removeItem('optimaq_resources');
+        localStorage.removeItem('optimaq_last_optimization');
+        localStorage.removeItem('optimaqTheme');
+        loadDataFromMemory();
+        showToast("All data cleared", "warning");
+        location.reload(); // Reload to reset everything
+    }
+}
 
-let savedTheme=
-localStorage.getItem("optimaqTheme");
+window.onload = function(){
+    loadResourcesFromStorage();
+    loadDataFromMemory();
 
-if(savedTheme==="dark")
+    let savedTheme = localStorage.getItem("optimaqTheme");
+    if(savedTheme === "dark") {
+        document.body.classList.add("dark");
+    }
 
-document.body.classList.add("dark");
-
+    // Show initial toast if resources exist
+    if (resources.length > 0) {
+        showToast(`Loaded ${resources.length} resources from storage`, "success");
+    }
 }
 
 function showToast(message,type="success"){
