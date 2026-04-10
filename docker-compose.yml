@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:5000/api
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+  backend:
+    build: ./backend
+    ports:
+      - "5000:5000"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/optimaq
+      - JWT_SECRET=your-super-secret-jwt-key
+      - FRONTEND_URL=http://localhost:3000
+    depends_on:
+      - mongodb
+      - ml-engine
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  ml-engine:
+    build: ./ml-engine
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./ml-engine:/app
+
+  mongodb:
+    image: mongo:7.0
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=optimaq
+
+volumes:
+  mongodb_data:

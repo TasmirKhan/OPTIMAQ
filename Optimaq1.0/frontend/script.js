@@ -1,6 +1,91 @@
 let resources = [];
 const AUTH_KEY = 'optimaq_logged_in';
 const LAST_OPTIMIZATION_KEY = 'optimaq_last_optimization';
+const DATASET_NAME_KEY = 'optimaq_dataset_name';
+const DATASET_TYPE_KEY = 'optimaq_dataset_type';
+
+/* DATA IMPORT & NORMALIZATION */
+function normalizeDataset(data, datasetType = 'generic') {
+    const normalized = [];
+    
+    if (!Array.isArray(data)) {
+        throw new Error('Data must be an array of resources');
+    }
+    
+    data.forEach((item, index) => {
+        try {
+            let id = item.id || item.name || item.resourceName || `Resource_${index + 1}`;
+            let capacity = parseFloat(item.capacity || item.max_capacity || item.totalBeds || item.total_capacity || 0);
+            let load = parseFloat(item.load || item.current_load || item.occupiedBeds || item.occupied || 0);
+            let tasks = item.tasks || item.activities || item.allocations || [];
+            
+            if (!Array.isArray(tasks)) {
+                tasks = tasks.toString().split(',').map(t => t.trim()).filter(t => t);
+            }
+            
+            let utilization = capacity > 0 ? parseFloat(((load / capacity) * 100).toFixed(1)) : 0;
+            
+            normalized.push({
+                id: String(id),
+                capacity: Math.max(0, capacity),
+                load: Math.max(0, Math.min(load, capacity)),
+                tasks: tasks,
+                utilization: Math.max(0, Math.min(utilization, 100))
+            });
+        } catch (err) {
+            console.error(`Error normalizing record ${index}:`, err);
+        }
+    });
+    
+    return normalized;
+}
+
+function validateDataset(data) {
+    if (!Array.isArray(data) || data.length === 0) {
+        throw new Error('Dataset must be a non-empty array');
+    }
+}
+
+function importDataset(data, datasetName = 'Custom Dataset', datasetType = 'generic') {
+    try {
+        validateDataset(data);
+        const normalized = normalizeDataset(data, datasetType);
+        resources = normalized;
+        saveResourcesToStorage();
+        localStorage.setItem(DATASET_NAME_KEY, datasetName);
+        localStorage.setItem(DATASET_TYPE_KEY, datasetType);
+        return { success: true, resourceCount: resources.length };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+function parseCSV(csvText) {
+    const lines = csvText.split('\n').filter(line => line.trim());
+    if (lines.length < 2) throw new Error('CSV must have header and at least one data row');
+    
+    const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+    const data = [];
+    
+    for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(',').map(v => v.trim());
+        const record = {};
+        headers.forEach((header, idx) => {
+            record[header] = values[idx] || '';
+        });
+        data.push(record);
+    }
+    
+    return data;
+}
+
+function getDatasetInfo() {
+    return {
+        name: localStorage.getItem(DATASET_NAME_KEY) || 'Default Dataset',
+        type: localStorage.getItem(DATASET_TYPE_KEY) || 'generic',
+        resourceCount: resources.length
+    };
+}
 
 // Load resources from localStorage
 function loadResourcesFromStorage() {

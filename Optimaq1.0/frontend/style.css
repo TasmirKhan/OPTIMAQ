@@ -200,6 +200,93 @@ body{
     padding:0 20px;
 }
 
+.import-section{
+    display:grid;
+    gap:25px;
+    margin-top:30px;
+}
+
+.upload-area{
+    border:3px dashed #8b5cf6;
+    border-radius:20px;
+    padding:60px 30px;
+    text-align:center;
+    cursor:pointer;
+    transition:.3s;
+    background:linear-gradient(135deg,rgba(139,92,246,0.05),rgba(34,211,238,0.05));
+}
+
+.upload-area:hover{
+    background:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(34,211,238,0.15));
+    border-color:#22d3ee;
+}
+
+.upload-area i{
+    font-size:48px;
+    color:#8b5cf6;
+    margin-bottom:12px;
+}
+
+.upload-area p{
+    color:#64748b;
+    font-size:16px;
+}
+
+.sample-buttons{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+    gap:15px;
+}
+
+.sample-buttons .btn-primary{
+    width:100%;
+}
+
+.format-guide{
+    background:#f8fafc;
+    padding:20px;
+    border-radius:12px;
+}
+
+.format-guide h3{
+    color:#1e293b;
+    margin-top:20px;
+    margin-bottom:12px;
+    font-size:18px;
+}
+
+.format-guide table{
+    width:100%;
+    border-collapse:collapse;
+    margin-bottom:20px;
+}
+
+.format-guide th,
+.format-guide td{
+    padding:12px;
+    text-align:left;
+    border-bottom:1px solid #e2e8f0;
+}
+
+.format-guide th{
+    background:#e2e8f0;
+    font-weight:700;
+}
+
+.format-guide pre{
+    background:#1e293b;
+    color:#e2e8f0;
+    padding:15px;
+    border-radius:8px;
+    overflow-x:auto;
+    font-size:13px;
+    line-height:1.5;
+}
+
+.format-guide code{
+    font-family:'Courier New', monospace;
+}
+
 .login-illustration{
     text-align:center;
     margin-bottom:30px;

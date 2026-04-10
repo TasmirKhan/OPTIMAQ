@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Import Dataset - OPTIMAQ</title>
+    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-cogs"></i>
+                <span>OPTIMAQ</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="resources.html"><i class="fas fa-server"></i> Resources</a></li>
+                <li><a href="analytics.html"><i class="fas fa-chart-line"></i> Analytics</a></li>
+                <li><a href="about.html"><i class="fas fa-info-circle"></i> About</a></li>
+            </ul>
+            <div class="nav-actions">
+                <a id="authButton" class="nav-auth" href="login.html"><i class="fas fa-sign-in-alt"></i> Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page-header">
+        <h1><i class="fas fa-upload"></i> Import Dataset</h1>
+        <p>Load your own resource management data or use sample datasets</p>
+    </div>
+
+    <div class="container">
+        <div class="import-section">
+            <!-- File Upload -->
+            <div class="dashboard-card">
+                <h2><i class="fas fa-file-upload"></i> Upload Your Data</h2>
+                <div class="upload-area" id="uploadArea">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Drag & drop JSON or CSV files here, or click to browse</p>
+                    <input type="file" id="fileInput" accept=".json,.csv" style="display:none;">
+                </div>
+                <div id="uploadStatus" style="margin-top: 20px; display:none;"></div>
+            </div>
+
+            <!-- Dataset Info -->
+            <div class="dashboard-card">
+                <h2><i class="fas fa-info-circle"></i> Current Dataset</h2>
+                <div id="datasetInfo">
+                    <p><strong>Name:</strong> <span id="datasetName">Default Dataset</span></p>
+                    <p><strong>Type:</strong> <span id="datasetType">Generic</span></p>
+                    <p><strong>Resources:</strong> <span id="resourceCount">0</span></p>
+                </div>
+            </div>
+
+            <!-- Sample Datasets -->
+            <div class="dashboard-card">
+                <h2><i class="fas fa-database"></i> Sample Datasets</h2>
+                <div class="sample-buttons">
+                    <button onclick="loadSampleDataset('hospital')" class="btn-primary">
+                        <i class="fas fa-hospital"></i> Hospital Resources
+                    </button>
+                    <button onclick="loadSampleDataset('clinic')" class="btn-primary">
+                        <i class="fas fa-clinic-medical"></i> Clinic Operations
+                    </button>
+                    <button onclick="loadSampleDataset('warehouse')" class="btn-primary">
+                        <i class="fas fa-warehouse"></i> Warehouse Inventory
+                    </button>
+                    <button onclick="loadSampleDataset('server')" class="btn-primary">
+                        <i class="fas fa-server"></i> Data Center Servers
+                    </button>
+                </div>
+            </div>
+
+            <!-- Data Format Guide -->
+            <div class="dashboard-card">
+                <h2><i class="fas fa-book"></i> Data Format Guide</h2>
+                <div class="format-guide">
+                    <h3>Supported Field Names</h3>
+                    <table>
+                        <tr>
+                            <th>Category</th>
+                            <th>Recognized Field Names</th>
+                        </tr>
+                        <tr>
+                            <td><strong>ID/Name</strong></td>
+                            <td>id, name, resourceName</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Capacity</strong></td>
+                            <td>capacity, max_capacity, totalBeds, total_capacity</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Current Load</strong></td>
+                            <td>load, current_load, occupiedBeds, occupied</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tasks/Activities</strong></td>
+                            <td>tasks, activities, allocations (optional)</td>
+                        </tr>
+                    </table>
+                    
+                    <h3>Example JSON Format</h3>
+                    <pre><code>[
+  {
+    "id": "ICU_Ward",
+    "capacity": 20,
+    "load": 18,
+    "tasks": ["Patient_Care", "Monitoring"]
+  },
+  {
+    "id": "ER_Ward",
+    "capacity": 15,
+    "load": 12,
+    "tasks": ["Emergency_Response"]
+  }
+]</code></pre>
+
+                    <h3>Example CSV Format</h3>
+                    <pre><code>id,capacity,load,tasks
+ICU_Ward,20,18,"Patient_Care,Monitoring"
+ER_Ward,15,12,"Emergency_Response"</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast"></div>
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            requireLogin();
+            renderAuthButton();
+            updateDatasetDisplay();
+            setupFileUpload();
+        });
+
+        function updateDatasetDisplay() {
+            const info = getDatasetInfo();
+            document.getElementById('datasetName').innerText = info.name;
+            document.getElementById('datasetType').innerText = info.type;
+            document.getElementById('resourceCount').innerText = info.resourceCount;
+        }
+
+        function setupFileUpload() {
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+
+            uploadArea.addEventListener('click', () => fileInput.click());
+
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.style.opacity = '0.7';
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.style.opacity = '1';
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.style.opacity = '1';
+                handleFileUpload(e.dataTransfer.files[0]);
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files[0]) {
+                    handleFileUpload(e.target.files[0]);
+                }
+            });
+        }
+
+        function handleFileUpload(file) {
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    let data;
+                    if (file.name.endsWith('.json')) {
+                        data = JSON.parse(e.target.result);
+                        if (data.resources) data = data.resources;
+                    } else if (file.name.endsWith('.csv')) {
+                        data = parseCSV(e.target.result);
+                    } else {
+                        throw new Error('Unsupported file format. Use JSON or CSV.');
+                    }
+
+                    const result = importDataset(data, file.name.replace(/\.[^.]+$/, ''), 'custom');
+                    if (result.success) {
+                        showToast(`Imported ${result.resourceCount} resources from ${file.name}`, 'success');
+                        updateDatasetDisplay();
+                        setTimeout(() => window.location.href = 'resources.html', 1500);
+                    } else {
+                        showToast(`Import failed: ${result.error}`, 'danger');
+                    }
+                } catch (error) {
+                    showToast(`Error: ${error.message}`, 'danger');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function loadSampleDataset(type) {
+            const datasets = {
+                hospital: {
+                    name: 'Hospital Resource Management',
+                    type: 'hospital',
+                    data: [
+                        { id: 'ICU_Ward', capacity: 20, load: 18, tasks: ['Patient_Care', 'Monitoring'] },
+                        { id: 'ER_Ward', capacity: 15, load: 12, tasks: ['Emergency_Response'] },
+                        { id: 'General_Ward', capacity: 50, load: 42, tasks: ['Patient_Care', 'Recovery'] },
+                        { id: 'Pediatric_Ward', capacity: 25, load: 20, tasks: ['Child_Care'] },
+                        { id: 'Surgery_Suite', capacity: 8, load: 7, tasks: ['Operations'] },
+                        { id: 'Radiology', capacity: 6, load: 4, tasks: ['Imaging', 'Scanning'] }
+                    ]
+                },
+                clinic: {
+                    name: 'Clinic Operations',
+                    type: 'clinic',
+                    data: [
+                        { id: 'Consultation_Room_A', capacity: 2, load: 2, tasks: ['Patient_Consultation'] },
+                        { id: 'Consultation_Room_B', capacity: 2, load: 1, tasks: ['Patient_Consultation'] },
+                        { id: 'Lab_Services', capacity: 10, load: 8, tasks: ['Testing', 'Analysis'] },
+                        { id: 'Pharmacy', capacity: 5, load: 3, tasks: ['Medication_Distribution'] },
+                        { id: 'Reception', capacity: 3, load: 3, tasks: ['Check_In', 'Records'] }
+                    ]
+                },
+                warehouse: {
+                    name: 'Warehouse Inventory',
+                    type: 'warehouse',
+                    data: [
+                        { id: 'Storage_A', capacity: 1000, load: 850, tasks: ['Storage', 'Organization'] },
+                        { id: 'Storage_B', capacity: 800, load: 600, tasks: ['Storage', 'Organization'] },
+                        { id: 'Packing_Station', capacity: 50, load: 45, tasks: ['Packing', 'Labeling'] },
+                        { id: 'Loading_Dock', capacity: 20, load: 18, tasks: ['Shipping', 'Loading'] },
+                        { id: 'Sorting_Area', capacity: 100, load: 75, tasks: ['Sorting', 'Categorization'] }
+                    ]
+                },
+                server: {
+                    name: 'Data Center Servers',
+                    type: 'server',
+                    data: [
+                        { id: 'Server_Rack_01', capacity: 100, load: 88, tasks: ['Web_Hosting', 'Database'] },
+                        { id: 'Server_Rack_02', capacity: 100, load: 92, tasks: ['Application_Server'] },
+                        { id: 'Storage_Server', capacity: 200, load: 145, tasks: ['Data_Storage', 'Backup'] },
+                        { id: 'Load_Balancer', capacity: 50, load: 48, tasks: ['Traffic_Distribution'] },
+                        { id: 'Security_Server', capacity: 30, load: 25, tasks: ['Firewall', 'Intrusion_Detection'] }
+                    ]
+                }
+            };
+
+            const dataset = datasets[type];
+            if (!dataset) {
+                showToast('Sample dataset not found', 'danger');
+                return;
+            }
+
+            const result = importDataset(dataset.data, dataset.name, dataset.type);
+            if (result.success) {
+                showToast(`Loaded ${result.resourceCount} resources from ${dataset.name}`, 'success');
+                updateDatasetDisplay();
+                setTimeout(() => window.location.href = 'resources.html', 1500);
+            } else {
+                showToast(`Failed to load sample: ${result.error}`, 'danger');
+            }
+        }
+    </script>
+</body>
+</html>

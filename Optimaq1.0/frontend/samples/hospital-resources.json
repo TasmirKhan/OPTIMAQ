@@ -1,0 +1,116 @@
+{
+  "datasetName": "Hospital Resource Management System",
+  "datasetType": "hospital",
+  "description": "Sample hospital resource allocation data including wards, equipment, and staff",
+  "totalCapacity": 153,
+  "totalLoad": 122,
+  "efficiency": 79.74,
+  "resources": [
+    {
+      "id": "ICU_Ward",
+      "capacity": 20,
+      "load": 18,
+      "occupancyRate": 90,
+      "tasks": ["Patient_Care", "Continuous_Monitoring", "Life_Support"],
+      "staffRequired": 8,
+      "staffAvailable": 8,
+      "equipment": ["Ventilators", "Monitors", "Infusion_Pumps"]
+    },
+    {
+      "id": "Emergency_Department",
+      "capacity": 15,
+      "load": 12,
+      "occupancyRate": 80,
+      "tasks": ["Emergency_Triage", "First_Aid", "Assessment"],
+      "staffRequired": 6,
+      "staffAvailable": 5,
+      "equipment": ["Defibrillators", "Monitors", "Stretchers"]
+    },
+    {
+      "id": "General_Ward_A",
+      "capacity": 50,
+      "load": 42,
+      "occupancyRate": 84,
+      "tasks": ["Patient_Care", "Recovery", "Monitoring"],
+      "staffRequired": 12,
+      "staffAvailable": 12,
+      "equipment": ["Beds", "Monitors", "Oxygen_Systems"]
+    },
+    {
+      "id": "Pediatric_Ward",
+      "capacity": 25,
+      "load": 20,
+      "occupancyRate": 80,
+      "tasks": ["Child_Care", "Play_Therapy", "Monitoring"],
+      "staffRequired": 6,
+      "staffAvailable": 6,
+      "equipment": ["Pediatric_Beds", "Monitors", "Infusion_Pumps"]
+    },
+    {
+      "id": "Surgery_Suite",
+      "capacity": 8,
+      "load": 7,
+      "occupancyRate": 87.5,
+      "tasks": ["Operations", "Sterile_Procedures", "Recovery"],
+      "staffRequired": 5,
+      "staffAvailable": 5,
+      "equipment": ["Operation_Tables", "Surgical_Lights", "Anesthesia_Machines"]
+    },
+    {
+      "id": "Radiology_Department",
+      "capacity": 6,
+      "load": 4,
+      "occupancyRate": 67,
+      "tasks": ["Imaging", "CT_Scans", "X_Rays", "Ultrasound"],
+      "staffRequired": 3,
+      "staffAvailable": 3,
+      "equipment": ["CT_Scanner", "X_Ray_Machine", "Ultrasound_Machine"]
+    },
+    {
+      "id": "Laboratory_Services",
+      "capacity": 10,
+      "load": 8,
+      "occupancyRate": 80,
+      "tasks": ["Blood_Tests", "Sample_Analysis", "Pathology"],
+      "staffRequired": 4,
+      "staffAvailable": 4,
+      "equipment": ["Analyzers", "Centrifuges", "Microscopes"]
+    },
+    {
+      "id": "Pharmacy_Department",
+      "capacity": 5,
+      "load": 3,
+      "occupancyRate": 60,
+      "tasks": ["Medication_Distribution", "Preparation", "Counseling"],
+      "staffRequired": 2,
+      "staffAvailable": 2,
+      "equipment": ["Dispensing_Machines", "Storage_Refrigerators"]
+    },
+    {
+      "id": "Physical_Therapy_Center",
+      "capacity": 8,
+      "load": 6,
+      "occupancyRate": 75,
+      "tasks": ["Rehabilitation", "Therapy_Sessions", "Assessment"],
+      "staffRequired": 3,
+      "staffAvailable": 3,
+      "equipment": ["Therapy_Equipment", "Exercise_Machines", "Mirrors"]
+    },
+    {
+      "id": "Ambulances",
+      "capacity": 6,
+      "load": 4,
+      "occupancyRate": 67,
+      "tasks": ["Patient_Transport", "Emergency_Response", "First_Aid"],
+      "staffRequired": 8,
+      "staffAvailable": 7,
+      "equipment": ["Life_Support", "Stretchers", "First_Aid_Kits"]
+    }
+  ],
+  "bottlenecks": [],
+  "recommendations": [
+    "Increase staffing in Emergency Department during peak hours",
+    "Optimize patient flow in ICU Ward",
+    "Consider expanding Radiology capacity"
+  ]
+}

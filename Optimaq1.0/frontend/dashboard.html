@@ -20,6 +20,7 @@
                 <li><a href="dashboard.html" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
                 <li><a href="resources.html"><i class="fas fa-server"></i> Resources</a></li>
                 <li><a href="analytics.html"><i class="fas fa-chart-line"></i> Analytics</a></li>
+                <li><a href="import-data.html"><i class="fas fa-upload"></i> Import</a></li>
                 <li><a href="about.html"><i class="fas fa-info-circle"></i> About</a></li>
             </ul>
             <div class="nav-actions">
@@ -39,7 +40,7 @@
         <h1>OPTIMAQ Resource Optimizer</h1>
         <div class="header-info">
             <p>Version 1.0 | AI Resource Optimization Engine</p>
-            <p>Resource Allocation Dashboard</p>
+            <p>Dataset: <span id="currentDataset">Default Dataset</span> | Resources Loaded: <span id="loadedResources">0</span></p>
         </div>
     </div>
 
@@ -249,6 +250,12 @@
         document.addEventListener('DOMContentLoaded', function() {
             requireLogin();
             loadResourcesFromStorage();
+            
+            // Display dataset info
+            const datasetInfo = getDatasetInfo();
+            document.getElementById('currentDataset').innerText = datasetInfo.name;
+            document.getElementById('loadedResources').innerText = datasetInfo.resourceCount;
+            
             loadDataFromMemory();
         });
     </script>
