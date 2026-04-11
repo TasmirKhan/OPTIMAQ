@@ -7,6 +7,7 @@ services:
       - "3000:3000"
     environment:
       - REACT_APP_API_URL=http://localhost:5000/api
+      - DOCKER_CONTAINER=true
     depends_on:
       - backend
     volumes:
@@ -27,6 +28,7 @@ services:
     volumes:
       - ./backend:/app
       - /app/node_modules
+    command: sh -c "npm run seed && npm start"
 
   ml-engine:
     build: ./ml-engine

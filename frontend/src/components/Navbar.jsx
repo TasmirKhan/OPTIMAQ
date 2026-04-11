@@ -24,6 +24,7 @@ const Navbar = () => {
     { path: '/dashboard', icon: 'fas fa-tachometer-alt', label: 'Dashboard' },
     { path: '/resources', icon: 'fas fa-server', label: 'Resources' },
     { path: '/analytics', icon: 'fas fa-chart-line', label: 'Analytics' },
+    { path: '/system-analysis', icon: 'fas fa-cogs', label: 'System' },
     { path: '/import-data', icon: 'fas fa-upload', label: 'Import' },
     { path: '/about', icon: 'fas fa-info-circle', label: 'About' },
   ];

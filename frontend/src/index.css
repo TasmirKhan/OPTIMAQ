@@ -2,17 +2,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --primary-gradient: linear-gradient(135deg, #6366f1, #22c55e);
-  --secondary-gradient: linear-gradient(135deg, #7c3aed, #22d3ee);
+  --primary-gradient: #374151;
+  --secondary-gradient: #4b5563;
   --success-gradient: linear-gradient(135deg, #10b981, #34d399);
   --warning-gradient: linear-gradient(135deg, #f59e0b, #fbbf24);
   --danger-gradient: linear-gradient(135deg, #ef4444, #f87171);
-  --dark-bg: #0f172a;
-  --dark-card: #1e293b;
-  --light-bg: #f1f3f6;
+  --dark-bg: #111827;
+  --dark-card: #1f2937;
+  --light-bg: #f9fafb;
   --light-card: #ffffff;
-  --text-dark: #1f2937;
-  --text-light: #f8fafc;
+  --text-dark: #111827;
+  --text-light: #f9fafb;
   --shadow: 0 8px 20px rgba(0,0,0,0.15);
   --border-radius: 12px;
 }
@@ -66,7 +66,7 @@ body.dark-mode {
 }
 
 .nav-logo i {
-  color: #38bdf8;
+  color: #6b7280;
 }
 
 .nav-menu {
@@ -88,8 +88,8 @@ body.dark-mode {
 
 .nav-menu li a:hover,
 .nav-menu li a.active {
-  color: #38bdf8;
-  background: rgba(56, 189, 248, 0.1);
+  color: #374151;
+  background: rgba(55, 65, 81, 0.1);
 }
 
 .nav-actions {
@@ -135,7 +135,7 @@ body.dark-mode {
 
 /* Hero Section */
 .hero {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
   color: white;
   padding: 80px 30px;
   text-align: center;
@@ -169,7 +169,7 @@ body.dark-mode {
 }
 
 .gradient-text {
-  background: linear-gradient(45deg, #fff, #38bdf8, #fff);
+  background: linear-gradient(45deg, #fff, #9ca3af, #fff);
   background-size: 200% 200%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -215,7 +215,7 @@ body.dark-mode {
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 10px 25px rgba(55, 65, 81, 0.3);
 }
 
 .btn-secondary {
@@ -294,7 +294,7 @@ body.dark-mode .stat-card {
   box-shadow: 0 15px 35px rgba(0,0,0,0.1);
 }
 
-.stat-primary { border-left: 4px solid #6366f1; }
+.stat-primary { border-left: 4px solid #374151; }
 .stat-success { border-left: 4px solid #10b981; }
 .stat-warning { border-left: 4px solid #f59e0b; }
 .stat-danger { border-left: 4px solid #ef4444; }

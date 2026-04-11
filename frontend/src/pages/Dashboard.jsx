@@ -53,8 +53,8 @@ const Dashboard = () => {
     datasets: [{
       label: 'CPU Usage (%)',
       data: [45, 52, 48, 61, 55, 43],
-      borderColor: '#6366f1',
-      backgroundColor: 'rgba(99, 102, 241, 0.1)',
+      borderColor: '#374151',
+      backgroundColor: 'rgba(55, 65, 81, 0.1)',
       tension: 0.4,
     }],
   };
@@ -64,7 +64,7 @@ const Dashboard = () => {
     datasets: [{
       label: 'Memory Usage (GB)',
       data: [12, 15, 13, 18, 16, 14, 11],
-      backgroundColor: '#10b981',
+      backgroundColor: '#4b5563',
     }],
   };
 

@@ -7,6 +7,7 @@ import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import Resources from './pages/Resources';
 import Analytics from './pages/Analytics';
+import SystemAnalysis from './pages/SystemAnalysis';
 import ImportData from './pages/ImportData';
 import About from './pages/About';
 import Login from './pages/Login';
@@ -43,6 +44,11 @@ function AppContent() {
         <Route path="/analytics" element={
           <ProtectedRoute>
             <Analytics />
+          </ProtectedRoute>
+        } />
+        <Route path="/system-analysis" element={
+          <ProtectedRoute>
+            <SystemAnalysis />
           </ProtectedRoute>
         } />
         <Route path="/import-data" element={

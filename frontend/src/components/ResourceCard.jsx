@@ -4,11 +4,11 @@ const ResourceCard = ({ resource }) => {
   const getIcon = (type) => {
     switch (type) {
       case 'API':
-        return <Globe className="w-8 h-8 text-blue-500" />;
+        return <Globe className="w-8 h-8 text-gray-500" />;
       case 'Database':
-        return <Database className="w-8 h-8 text-green-500" />;
+        return <Database className="w-8 h-8 text-gray-500" />;
       case 'Service':
-        return <Server className="w-8 h-8 text-purple-500" />;
+        return <Server className="w-8 h-8 text-gray-500" />;
       default:
         return <Server className="w-8 h-8 text-gray-500" />;
     }

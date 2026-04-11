@@ -11,6 +11,7 @@ const authRoutes = require('./routes/auth');
 const metricsRoutes = require('./routes/metrics');
 const resourcesRoutes = require('./routes/resources');
 const reportsRoutes = require('./routes/reports');
+const systemRoutes = require('./routes/system');
 
 const app = express();
 const server = createServer(app);
@@ -39,6 +40,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/metrics', metricsRoutes);
 app.use('/api/resources', resourcesRoutes);
 app.use('/api/reports', reportsRoutes);
+app.use('/api/system', systemRoutes);
 
 // Socket.io for real-time updates
 io.on('connection', (socket) => {
