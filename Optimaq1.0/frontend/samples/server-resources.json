@@ -1,0 +1,32 @@
+[
+  {
+    "id": "Server_01",
+    "capacity": 100,
+    "load": 85,
+    "tasks": ["Web_Hosting", "API_Service"]
+  },
+  {
+    "id": "Server_02",
+    "capacity": 100,
+    "load": 60,
+    "tasks": ["Database", "Caching"]
+  },
+  {
+    "id": "Storage_Server",
+    "capacity": 500,
+    "load": 400,
+    "tasks": ["Data_Storage", "Backup", "Archive"]
+  },
+  {
+    "id": "Load_Balancer",
+    "capacity": 50,
+    "load": 45,
+    "tasks": ["Traffic_Distribution", "Health_Check"]
+  },
+  {
+    "id": "Security_Server",
+    "capacity": 30,
+    "load": 25,
+    "tasks": ["Firewall", "Intrusion_Detection", "Logging"]
+  }
+]

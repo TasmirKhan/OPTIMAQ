@@ -1,0 +1,10 @@
+id,capacity,load,tasks
+ICU_Ward,20,18,"Patient_Care,Continuous_Monitoring,Life_Support"
+Emergency_Department,15,12,"Emergency_Triage,First_Aid,Assessment"
+General_Ward_A,50,42,"Patient_Care,Recovery,Monitoring"
+Pediatric_Ward,25,20,"Child_Care,Play_Therapy,Monitoring"
+Surgery_Suite,8,7,"Operations,Surgical_Prep"
+Radiology,6,4,"Imaging,Scanning,Report_Generation"
+Laboratory,10,8,"Testing,Analysis,Sample_Processing"
+Pharmacy,5,3,"Medication_Distribution,Inventory_Management"
+Reception,3,3,"Check_In,Records,Scheduling"

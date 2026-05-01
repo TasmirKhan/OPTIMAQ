@@ -669,20 +669,6 @@ transform:scale(1.05);
 
 }
 
-.barChart{
-
-height:20px;
-
-background:#3498db;
-
-margin:5px;
-
-color:white;
-
-padding:5px;
-
-}
-
 .log{
 
 background:white;
@@ -705,35 +691,63 @@ font-family:'Segoe UI';
 
 .barChart{
 
-height:25px;
+height:30px;
 
 background:#3498db;
 
-margin:8px;
+margin:8px 0;
 
 border-radius:5px;
 
 color:white;
 
-padding-left:10px;
+padding:0 10px;
 
-line-height:25px;
+line-height:30px;
+
+white-space:nowrap;
+
+overflow:hidden;
+
+text-overflow:ellipsis;
+
+display:inline-block;
+
+min-width:100px;
+
+max-width:100%;
 
 }
 
 #taskChart{
 
-width:500px;
+max-width:100%;
 
 margin:30px auto;
 
 background:white;
 
-padding:15px;
+padding:20px;
 
 border-radius:10px;
 
 box-shadow:0 5px 15px rgba(0,0,0,0.1);
+
+display:flex;
+
+flex-wrap:wrap;
+
+align-items:flex-start;
+
+justify-content:flex-start;
+
+gap:5px;
+
+overflow-x:auto;
+
+@media (max-width:768px){
+    padding:15px;
+}
 
 }
 

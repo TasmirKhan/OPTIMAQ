@@ -127,20 +127,38 @@ ER_Ward,15,12,"Emergency_Response"</code></pre>
     </div>
 
     <div id="toast"></div>
+    <div style="background: #f0f0f0; padding: 20px; margin: 20px 0; border-radius: 8px; display:none;" id="debugPanel">
+        <h3>Debug Info</h3>
+        <pre id="debugOutput" style="background: white; padding: 10px; border-radius: 4px; overflow: auto; max-height: 200px;"></pre>
+    </div>
     <script src="script.js"></script>
     <script>
+        console.log('📄 Import Data page script loading...');
+
         document.addEventListener('DOMContentLoaded', function() {
-            requireLogin();
+            console.log('📄 Import Data page DOMContentLoaded');
+            try {
+                requireLogin();
+                console.log('✓ Login check passed');
+            } catch (err) {
+                console.log('⚠️  Login check initiated');
+            }
             renderAuthButton();
             updateDatasetDisplay();
             setupFileUpload();
+            console.log('✓ Import Data page fully initialized');
         });
 
         function updateDatasetDisplay() {
-            const info = getDatasetInfo();
-            document.getElementById('datasetName').innerText = info.name;
-            document.getElementById('datasetType').innerText = info.type;
-            document.getElementById('resourceCount').innerText = info.resourceCount;
+            try {
+                const info = getDatasetInfo();
+                document.getElementById('datasetName').innerText = info.name;
+                document.getElementById('datasetType').innerText = info.type;
+                document.getElementById('resourceCount').innerText = info.resourceCount;
+                console.log('✓ Dataset display updated:', info);
+            } catch (err) {
+                console.error('❌ Error updating dataset display:', err);
+            }
         }
 
         function setupFileUpload() {
@@ -174,31 +192,63 @@ ER_Ward,15,12,"Emergency_Response"</code></pre>
         function handleFileUpload(file) {
             if (!file) return;
 
+            // Validate file type
+            if (!file.name.endsWith('.json') && !file.name.endsWith('.csv')) {
+                showToast('Unsupported file format. Use JSON or CSV.', 'danger');
+                return;
+            }
+
+            // Validate file size (limit to 5MB)
+            const maxSize = 5 * 1024 * 1024;
+            if (file.size > maxSize) {
+                showToast('File is too large. Maximum size is 5MB.', 'danger');
+                return;
+            }
+
             const reader = new FileReader();
             reader.onload = (e) => {
                 try {
                     let data;
                     if (file.name.endsWith('.json')) {
                         data = JSON.parse(e.target.result);
-                        if (data.resources) data = data.resources;
+                        // If the JSON has a resources array, use that
+                        if (data.resources && Array.isArray(data.resources)) {
+                            data = data.resources;
+                        } else if (!Array.isArray(data)) {
+                            throw new Error('JSON must be an array of resources or have a "resources" array property');
+                        }
                     } else if (file.name.endsWith('.csv')) {
                         data = parseCSV(e.target.result);
                     } else {
                         throw new Error('Unsupported file format. Use JSON or CSV.');
                     }
 
+                    // Validate data before import
+                    if (!Array.isArray(data) || data.length === 0) {
+                        throw new Error('Dataset must contain at least one resource');
+                    }
+
                     const result = importDataset(data, file.name.replace(/\.[^.]+$/, ''), 'custom');
                     if (result.success) {
-                        showToast(`Imported ${result.resourceCount} resources from ${file.name}`, 'success');
+                        console.log('✓ File import successful:', result);
+                        console.log('✓ Stored resources:', localStorage.getItem('optimaq_resources'));
+                        showToast(`Successfully imported ${result.resourceCount} resources`, 'success');
                         updateDatasetDisplay();
                         setTimeout(() => window.location.href = 'resources.html', 1500);
                     } else {
                         showToast(`Import failed: ${result.error}`, 'danger');
+                        console.error('✗ Import error:', result.error);
                     }
                 } catch (error) {
-                    showToast(`Error: ${error.message}`, 'danger');
+                    showToast(`Error processing file: ${error.message}`, 'danger');
+                    console.error('File processing error:', error);
                 }
             };
+            
+            reader.onerror = () => {
+                showToast('Error reading file', 'danger');
+            };
+            
             reader.readAsText(file);
         }
 
@@ -259,11 +309,14 @@ ER_Ward,15,12,"Emergency_Response"</code></pre>
 
             const result = importDataset(dataset.data, dataset.name, dataset.type);
             if (result.success) {
+                console.log('✓ Import successful:', result);
+                console.log('✓ Stored resources:', localStorage.getItem('optimaq_resources'));
                 showToast(`Loaded ${result.resourceCount} resources from ${dataset.name}`, 'success');
                 updateDatasetDisplay();
                 setTimeout(() => window.location.href = 'resources.html', 1500);
             } else {
                 showToast(`Failed to load sample: ${result.error}`, 'danger');
+                console.error('✗ Import failed:', result.error);
             }
         }
     </script>

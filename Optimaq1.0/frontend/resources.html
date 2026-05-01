@@ -99,62 +99,95 @@
     <script>
         // Resources page specific functions
         function updateResourceStats() {
-            const totalResources = resources.length;
-            const activeResources = resources.filter(r => parseFloat(r.utilization) > 0).length;
-            const overloadedResources = resources.filter(r => parseFloat(r.utilization) > 85).length;
+            try {
+                const totalResources = resources.length;
+                const activeResources = resources.filter(r => parseFloat(r.utilization) > 0).length;
+                const overloadedResources = resources.filter(r => parseFloat(r.utilization) > 85).length;
 
-            document.getElementById('totalResources').innerText = totalResources;
-            document.getElementById('activeResources').innerText = activeResources;
-            document.getElementById('overloadedResources').innerText = overloadedResources;
+                document.getElementById('totalResources').innerText = totalResources;
+                document.getElementById('activeResources').innerText = activeResources;
+                document.getElementById('overloadedResources').innerText = overloadedResources;
+                console.log(`📊 Stats updated: ${totalResources} total, ${activeResources} active, ${overloadedResources} overloaded`);
+            } catch (err) {
+                console.error('❌ Error updating stats:', err);
+            }
         }
 
         function renderResourcesList() {
-            const container = document.getElementById('resources');
-            container.innerHTML = '';
+            try {
+                const container = document.getElementById('resources');
+                if (!container) {
+                    console.error('❌ Container element not found');
+                    return;
+                }
 
-            if (resources.length === 0) {
-                container.innerHTML = '<p style="text-align: center; padding: 40px; color: #64748b;">No resources added yet. Add some resources to get started!</p>';
-                return;
+                container.innerHTML = '';
+
+                if (!resources || resources.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; padding: 40px; color: #64748b;">No resources added yet. Add some resources to get started!</p>';
+                    console.warn('⚠️  No resources to render');
+                    return;
+                }
+
+                console.log(`📋 Rendering ${resources.length} resources`);
+
+                resources.forEach((r, idx) => {
+                    try {
+                        // Normalize data
+                        const utilization = parseFloat(r.utilization) || 0;
+                        const capacity = Number(r.capacity) || 0;
+                        const load = Number(r.load) || 0;
+                        const tasks = Array.isArray(r.tasks) ? r.tasks : [];
+
+                        let color = "low";
+                        if (utilization > 80) color = "high";
+                        else if (utilization > 50) color = "medium";
+
+                        let status = "Optimal";
+                        if (utilization > 85) status = "Critical";
+                        else if (utilization > 60) status = "Moderate";
+
+                        let card = document.createElement("div");
+                        card.className = "resource";
+                        card.innerHTML = `
+                            <div class='resourceHeader'>
+                                <h3>${r.id}</h3>
+                                <div class='menuBtn' onclick='toggleMenu(this)'>⋮</div>
+                            </div>
+                            <div class='menuDropdown'>
+                                <div onclick='optimizeResource("${r.id}")'>Optimize</div>
+                                <div onclick='deleteResource("${r.id}")'>Delete</div>
+                            </div>
+                            <p>Status: <span class='status ${status}'>${status}</span></p>
+                            <p><b>Capacity:</b> ${capacity}</p>
+                            <p><b>Load:</b> ${load}</p>
+                            <p><b>Utilization:</b> ${utilization}%</p>
+                            <div class='progress'>
+                                <div class='bar ${color}' style='width:${utilization}%'></div>
+                            </div>
+                            <p><b>Tasks:</b> ${tasks.length} tasks</p>
+                        `;
+                        container.appendChild(card);
+                    } catch (err) {
+                        console.error(`❌ Error rendering resource ${idx}:`, err);
+                    }
+                });
+                console.log('✓ Resources rendered successfully');
+            } catch (err) {
+                console.error('❌ Error rendering resources list:', err);
             }
-
-            resources.forEach(r => {
-                let color = "low";
-                if (parseFloat(r.utilization) > 80) color = "high";
-                else if (parseFloat(r.utilization) > 50) color = "medium";
-
-                let status = "Optimal";
-                if (parseFloat(r.utilization) > 85) status = "Critical";
-                else if (parseFloat(r.utilization) > 60) status = "Moderate";
-
-                let card = document.createElement("div");
-                card.className = "resource";
-                card.innerHTML = `
-                    <div class='resourceHeader'>
-                        <h3>${r.id}</h3>
-                        <div class='menuBtn' onclick='toggleMenu(this)'>⋮</div>
-                    </div>
-                    <div class='menuDropdown'>
-                        <div onclick='optimizeResource("${r.id}")'>Optimize</div>
-                        <div onclick='deleteResource("${r.id}")'>Delete</div>
-                    </div>
-                    <p>Status: <span class='status ${status}'>${status}</span></p>
-                    <p><b>Capacity:</b> ${r.capacity}</p>
-                    <p><b>Load:</b> ${r.load}</p>
-                    <p><b>Utilization:</b> ${r.utilization}%</p>
-                    <div class='progress'>
-                        <div class='bar ${color}' style='width:${r.utilization}%'></div>
-                    </div>
-                    <p><b>Tasks:</b> ${r.tasks.length}</p>
-                `;
-                container.appendChild(card);
-            });
         }
 
         function fetchDefaultResources() {
+            console.log('📥 Fetching default resources...');
             fetch('output/result.json')
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    return response.json();
+                })
                 .then(data => {
                     if (Array.isArray(data.resources) && data.resources.length > 0) {
+                        console.log(`✓ Loaded ${data.resources.length} default resources`);
                         resources = data.resources.map(r => ({
                             id: r.id,
                             capacity: Number(r.capacity) || 0,
@@ -162,58 +195,90 @@
                             tasks: Array.isArray(r.tasks) ? r.tasks : [],
                             utilization: Number(r.utilization) || 0
                         }));
-            if (resources.length === 0) {
-                fetchDefaultResources();
-            }
                         saveResourcesToStorage();
                         updateResourceStats();
                         renderResourcesList();
+                    } else {
+                        console.warn('⚠️  No resources in default data');
                     }
                 })
-                .catch(() => {
-                    console.warn('No default resource data available');
+                .catch(err => {
+                    console.warn('⚠️  Could not load default resource data:', err.message);
                 });
         }
 
-        function fetchDefaultResources() {
-            fetch('output/result.json')
-                .then(response => response.json())
-                .then(data => {
-                    if (Array.isArray(data.resources) && data.resources.length > 0) {
-                        resources = data.resources.map(r => ({
-                            id: r.id,
-                            capacity: Number(r.capacity) || 0,
-                            load: Number(r.load) || 0,
-                            tasks: Array.isArray(r.tasks) ? r.tasks : [],
-                            utilization: Number(r.utilization) || 0
-                        }));
-                        saveResourcesToStorage();
-                        updateResourceStats();
-                        renderResourcesList();
-                    }
-                })
-                .catch(() => {
-                    console.warn('No default resource data available');
-                });
-        }
-
-        // Override the global loadDataFromMemory to also update the resources page
-        const originalLoadDataFromMemory = loadDataFromMemory;
-        loadDataFromMemory = function() {
-            originalLoadDataFromMemory();
+        // Sync page functions with global ones
+        function syncPageWithGlobal() {
+            console.log('🔄 Synchronizing page with global state');
+            console.log('   Resources in memory:', resources.length);
+            console.log('   Resources in storage:', localStorage.getItem('optimaq_resources') ? JSON.parse(localStorage.getItem('optimaq_resources')).length : 0);
+            console.log('   Dataset info:', getDatasetInfo());
             updateResourceStats();
             renderResourcesList();
-        };
+        }
+
+        // Debug function
+        function debugResourcesState() {
+            console.group('🔍 DEBUG: Resources State');
+            console.log('Global resources array:', resources);
+            console.log('Total resources:', resources.length);
+            const stored = localStorage.getItem('optimaq_resources');
+            console.log('Storage content:', stored ? JSON.parse(stored) : 'Empty');
+            const datasetInfo = getDatasetInfo();
+            console.log('Dataset info:', datasetInfo);
+            console.groupEnd();
+            return {
+                memoryCount: resources.length,
+                storageCount: stored ? JSON.parse(stored).length : 0,
+                datasetInfo: datasetInfo
+            };
+        }
+
+        // Make debug available globally
+        window.debugResources = debugResourcesState;
 
         // Load resources on page load
         document.addEventListener('DOMContentLoaded', function() {
-            requireLogin();
-            loadResourcesFromStorage();
-            if (resources.length === 0) {
-                fetchDefaultResources();
+            console.log('📄 Resources page DOMContentLoaded');
+            
+            try {
+                requireLogin();
+                console.log('✓ Login check passed');
+            } catch (err) {
+                console.warn('⚠️  Login check error:', err);
             }
-            updateResourceStats();
-            renderResourcesList();
+
+            console.log('📥 Loading resources from storage...');
+            loadResourcesFromStorage();
+            console.log(`📊 Loaded ${resources.length} resources from storage`);
+
+            if (resources.length === 0) {
+                console.log('⚠️  No resources in storage, fetching defaults...');
+                fetchDefaultResources();
+            } else {
+                console.log(`✓ Using ${resources.length} resources from storage`);
+                syncPageWithGlobal();
+            }
+
+            // Re-sync after a short delay to ensure all resources are loaded
+            setTimeout(() => {
+                console.log('↻ Performing late-sync check');
+                if (resources.length > 0) {
+                    syncPageWithGlobal();
+                    console.log('✓ Late-sync complete');
+                }
+            }, 500);
+
+            console.log('✓ Resources page fully initialized');
+        });
+
+        // Listen for storage changes from other tabs
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'optimaq_resources') {
+                console.log('🔄 Storage changed in another tab, reloading...');
+                loadResourcesFromStorage();
+                syncPageWithGlobal();
+            }
         });
     </script>
 </body>

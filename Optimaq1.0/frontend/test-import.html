@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Import</title>
+</head>
+<body>
+    <h1>Testing Import Flow</h1>
+    <pre id="output"></pre>
+    <script src="script.js"></script>
+    <script>
+        // Simulate import data
+        const testData = [
+            { id: 'Server_01', capacity: 100, load: 85, tasks: ['Web', 'API'] },
+            { id: 'Server_02', capacity: 100, load: 60, tasks: ['Database', 'Cache'] }
+        ];
+        
+        console.log('Test 1: Import data');
+        const result = importDataset(testData, 'Test Dataset', 'server');
+        console.log('Import result:', result);
+        
+        console.log('\nTest 2: Resources in memory');
+        console.log('Resources:', resources);
+        
+        console.log('\nTest 3: Storage content');
+        const stored = localStorage.getItem('optimaq_resources');
+        console.log('Stored:', stored);
+        
+        console.log('\nTest 4: Load from storage');
+        resources = [];
+        loadResourcesFromStorage();
+        console.log('Loaded resources:', resources);
+        
+        // Display results
+        document.getElementById('output').innerText = 
+            'Import result: ' + JSON.stringify(result) + '\n\n' +
+            'Final resources: ' + JSON.stringify(resources, null, 2);
+    </script>
+</body>
+</html>

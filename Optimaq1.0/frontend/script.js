@@ -14,28 +14,53 @@ function normalizeDataset(data, datasetType = 'generic') {
     
     data.forEach((item, index) => {
         try {
-            let id = item.id || item.name || item.resourceName || `Resource_${index + 1}`;
-            let capacity = parseFloat(item.capacity || item.max_capacity || item.totalBeds || item.total_capacity || 0);
-            let load = parseFloat(item.load || item.current_load || item.occupiedBeds || item.occupied || 0);
-            let tasks = item.tasks || item.activities || item.allocations || [];
+            // Extract ID
+            let id = item.id || item.name || item.resourceName || item.resource_name || `Resource_${index + 1}`;
             
+            // Extract capacity with fallbacks
+            let capacity = item.capacity || item.max_capacity || item.totalBeds || item.total_capacity || item.max_load || 0;
+            capacity = parseFloat(capacity) || 0;
+            
+            // Extract current load with fallbacks
+            let load = item.load || item.current_load || item.occupiedBeds || item.occupied || item.usage || 0;
+            load = parseFloat(load) || 0;
+            
+            // Extract tasks
+            let tasks = item.tasks || item.activities || item.allocations || item.assignments || [];
+            
+            // Convert tasks to array if needed
             if (!Array.isArray(tasks)) {
-                tasks = tasks.toString().split(',').map(t => t.trim()).filter(t => t);
+                if (typeof tasks === 'string') {
+                    tasks = tasks.split(',').map(t => t.trim()).filter(t => t);
+                } else {
+                    tasks = [];
+                }
             }
             
+            // Validate and constrain values
+            capacity = Math.max(0, capacity);
+            load = Math.max(0, Math.min(load, capacity)); // Load cannot exceed capacity
+            
+            // Calculate utilization
             let utilization = capacity > 0 ? parseFloat(((load / capacity) * 100).toFixed(1)) : 0;
+            utilization = Math.max(0, Math.min(utilization, 100)); // Keep between 0-100
             
             normalized.push({
                 id: String(id),
-                capacity: Math.max(0, capacity),
-                load: Math.max(0, Math.min(load, capacity)),
+                capacity: capacity,
+                load: load,
                 tasks: tasks,
-                utilization: Math.max(0, Math.min(utilization, 100))
+                utilization: utilization
             });
         } catch (err) {
-            console.error(`Error normalizing record ${index}:`, err);
+            console.warn(`Warning: Error normalizing record ${index}:`, err);
+            // Skip this record but continue processing others
         }
     });
+    
+    if (normalized.length === 0) {
+        throw new Error('No valid resources could be extracted from the dataset');
+    }
     
     return normalized;
 }
@@ -48,14 +73,26 @@ function validateDataset(data) {
 
 function importDataset(data, datasetName = 'Custom Dataset', datasetType = 'generic') {
     try {
+        console.log('📥 Starting import:', { datasetName, datasetType, itemCount: data.length });
         validateDataset(data);
         const normalized = normalizeDataset(data, datasetType);
         resources = normalized;
+        
+        // Triple-check: save to storage immediately
         saveResourcesToStorage();
+        
+        // Verify the save
+        const verify = localStorage.getItem('optimaq_resources');
+        const verifyCount = verify ? JSON.parse(verify).length : 0;
+        console.log(`✓ Saved to localStorage: ${verifyCount} resources`);
+        
         localStorage.setItem(DATASET_NAME_KEY, datasetName);
         localStorage.setItem(DATASET_TYPE_KEY, datasetType);
+        
+        console.log(`✓ Import successful: ${normalized.length} resources processed`);
         return { success: true, resourceCount: resources.length };
     } catch (error) {
+        console.error('❌ Import failed:', error.message);
         return { success: false, error: error.message };
     }
 }
@@ -64,19 +101,53 @@ function parseCSV(csvText) {
     const lines = csvText.split('\n').filter(line => line.trim());
     if (lines.length < 2) throw new Error('CSV must have header and at least one data row');
     
-    const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+    // Parse header
+    const headers = parseCSVLine(lines[0]).map(h => h.trim().toLowerCase());
     const data = [];
     
+    // Parse data rows
     for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split(',').map(v => v.trim());
+        const values = parseCSVLine(lines[i]);
         const record = {};
         headers.forEach((header, idx) => {
-            record[header] = values[idx] || '';
+            record[header] = values[idx] ? values[idx].trim() : '';
         });
         data.push(record);
     }
     
     return data;
+}
+
+// Helper function to parse CSV line respecting quoted fields
+function parseCSVLine(line) {
+    const result = [];
+    let current = '';
+    let insideQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        const nextChar = line[i + 1];
+        
+        if (char === '"') {
+            if (insideQuotes && nextChar === '"') {
+                // Escaped quote
+                current += '"';
+                i++;
+            } else {
+                // Toggle quote state
+                insideQuotes = !insideQuotes;
+            }
+        } else if (char === ',' && !insideQuotes) {
+            // Field separator
+            result.push(current.trim());
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+    
+    result.push(current.trim());
+    return result;
 }
 
 function getDatasetInfo() {
@@ -91,7 +162,20 @@ function getDatasetInfo() {
 function loadResourcesFromStorage() {
     const stored = localStorage.getItem('optimaq_resources');
     if (stored) {
-        resources = JSON.parse(stored);
+        try {
+            resources = JSON.parse(stored);
+            // Ensure tasks are arrays
+            resources = resources.map(r => ({
+                ...r,
+                tasks: Array.isArray(r.tasks) ? r.tasks : [],
+                capacity: Number(r.capacity) || 0,
+                load: Number(r.load) || 0,
+                utilization: Number(r.utilization) || 0
+            }));
+        } catch (err) {
+            console.error('Error loading resources from storage:', err);
+            resources = [];
+        }
     }
 }
 
@@ -284,71 +368,46 @@ gain+"%</span>";
 }
 /* RESOURCE CARDS */
 
-let resourceDiv=
-document.getElementById("resources");
+let resourceDiv=document.getElementById("resources");
 
-resourceDiv.innerHTML="";
+if(resourceDiv) {
+    resourceDiv.innerHTML="";
+    
+    data.resources.forEach(r=>{
+        let color="low";
+        if(r.utilization>80)
+            color="high";
+        else if(r.utilization>50)
+            color="medium";
 
-data.resources.forEach(r=>{
+        let status="Optimal";
+        if(r.utilization>85)
+            status="Critical";
+        else if(r.utilization>60)
+            status="Moderate";
 
-let color="low";
-
-if(r.utilization>80)
-color="high";
-
-else if(r.utilization>50)
-color="medium";
-
-let status="Optimal";
-
-if(r.utilization>85)
-status="Critical";
-
-else if(r.utilization>60)
-status="Moderate";
-
-let card=document.createElement("div");
-
-card.className="resource";
-
-card.innerHTML=
-
-"<div class='resourceHeader'>"+
-
-"<h3>"+r.id+"</h3>"+
-
-"<div class='menuBtn' onclick='toggleMenu(this)'>⋮</div>"+
-
-"</div>"+
-
-"<div class='menuDropdown'>"+
-
-"<div onclick='optimizeResource(\""+r.id+"\")'>Optimize</div>"+
-
-"<div onclick='deleteResource(\""+r.id+"\")'>Delete</div>"+
-
-"</div>"+
-
-"<p>Status: <span class='status "+status+"'>"+status+"</span></p>"+
-
-"<p><b>Capacity:</b> "+r.capacity+"</p>"+
-
-"<p><b>Load:</b> "+r.load+"</p>"+
-
-"<p><b>Utilization:</b> "+r.utilization+"%</p>"+
-
-"<div class='progress'>"+
-
-"<div class='bar "+color+
-"' style='width:"+r.utilization+"%'></div>"+
-
-"</div>"+
-
-"<p><b>Tasks:</b> "+r.tasks+"</p>";
-
-resourceDiv.appendChild(card);
-
-})
+        let card=document.createElement("div");
+        card.className="resource";
+        card.innerHTML=
+            "<div class='resourceHeader'>"+
+            "<h3>"+r.id+"</h3>"+
+            "<div class='menuBtn' onclick='toggleMenu(this)'>⋮</div>"+
+            "</div>"+
+            "<div class='menuDropdown'>"+
+            "<div onclick='optimizeResource(\""+r.id+"\")'>Optimize</div>"+
+            "<div onclick='deleteResource(\""+r.id+"\")'>Delete</div>"+
+            "</div>"+
+            "<p>Status: <span class='status "+status+"'>"+status+"</span></p>"+
+            "<p><b>Capacity:</b> "+r.capacity+"</p>"+
+            "<p><b>Load:</b> "+r.load+"</p>"+
+            "<p><b>Utilization:</b> "+r.utilization+"%</p>"+
+            "<div class='progress'>"+
+            "<div class='bar "+color+"' style='width:"+r.utilization+"%'></div>"+
+            "</div>"+
+            "<p><b>Tasks:</b> "+(Array.isArray(r.tasks) ? r.tasks.join(', ') : r.tasks)+"</p>";
+        resourceDiv.appendChild(card);
+    });
+}
 
 let ctx=
 document
@@ -430,51 +489,36 @@ max:100
 
 /* RANKING */
 
-let table=
-document.getElementById("ranking");
-
-table.innerHTML=
-
-"<tr><th>Rank</th><th>Resource</th><th>Utilization</th></tr>";
-
-let sorted=[...data.resources];
-
-sorted.sort((a,b)=>b.utilization-a.utilization);
-
-sorted.forEach((r,i)=>{
-
-let row=table.insertRow();
-
-row.insertCell(0).innerText=i+1;
-
-row.insertCell(1).innerText=r.id;
-
-row.insertCell(2).innerText=r.utilization+" %";
-
-});
+let table=document.getElementById("ranking");
+if(table) {
+    table.innerHTML="<tr><th>Rank</th><th>Resource</th><th>Utilization</th></tr>";
+    let sorted=[...data.resources];
+    sorted.sort((a,b)=>b.utilization-a.utilization);
+    sorted.forEach((r,i)=>{
+        let row=table.insertRow();
+        row.insertCell(0).innerText=i+1;
+        row.insertCell(1).innerText=r.id;
+        row.insertCell(2).innerText=r.utilization+" %";
+    });
+}
 
 /* TASK CHART */
 
-let chart=
-document.getElementById("taskChart");
-
-chart.innerHTML="";
-
-data.resources.forEach(r=>{
-
-let bar=document.createElement("div");
-
-bar.className="barChart";
-
-bar.style.width=
-(r.tasks.length*60)+"px";
-
-bar.innerText=
-r.id+" : "+r.tasks.length+" tasks";
-
-chart.appendChild(bar);
-
-});
+let chart=document.getElementById("taskChart");
+if(chart) {
+    chart.innerHTML="";
+    data.resources.forEach(r=>{
+        let bar=document.createElement("div");
+        bar.className="barChart";
+        let taskCount=Array.isArray(r.tasks) ? r.tasks.length : 0;
+        let calculatedWidth=Math.min(taskCount*45,600);
+        bar.style.width=calculatedWidth+"px";
+        bar.style.flexBasis=calculatedWidth+"px";
+        bar.title=r.id+" : "+taskCount+" tasks";
+        bar.innerText=r.id+" : "+taskCount+" tasks";
+        chart.appendChild(bar);
+    });
+}
 
 
 /* SYSTEM HEALTH */
@@ -548,22 +592,13 @@ ai.innerHTML+="● "+i+"<br>";
 
 /* BOTTLENECKS */
 
-let bottleneckDiv=
-document.getElementById("bottlenecks");
-
-if(data.bottlenecks.length==0){
-
-bottleneckDiv.innerHTML=
-
-"<span style='color:#22c55e;font-weight:bold'>✓ System optimal</span>";
-
-}
-
-else{
-
-bottleneckDiv.innerHTML=
-data.bottlenecks;
-
+let bottleneckDiv=document.getElementById("bottlenecks");
+if(bottleneckDiv) {
+    if(data.bottlenecks && data.bottlenecks.length==0){
+        bottleneckDiv.innerHTML="<span style='color:#22c55e;font-weight:bold'>✓ System optimal</span>";
+    } else if(data.bottlenecks){
+        bottleneckDiv.innerHTML=data.bottlenecks;
+    }
 }
 
 
@@ -572,78 +607,57 @@ data.bottlenecks;
 let totalTasks=0;
 
 data.resources.forEach(r=>{
-
-totalTasks+=r.tasks.length;
-
+    // Ensure tasks is an array
+    let taskCount = Array.isArray(r.tasks) ? r.tasks.length : 0;
+    totalTasks += taskCount;
 });
 
-let failed=
-data.bottlenecks.length;
+let failed=data.bottlenecks && data.bottlenecks.length ? data.bottlenecks.length : 0;
 
-let success=
-totalTasks>0 ?
-
-(totalTasks/(totalTasks+failed))*100
-
-:0;
+let success=totalTasks>0 ? (totalTasks/(totalTasks+failed))*100 : 0;
 
 const summaryEl = document.getElementById("summary");
 if (summaryEl) {
     summaryEl.innerHTML=
-    "Total Tasks : "+(totalTasks+failed)+
-    "<br>Allocated : "+totalTasks+
-    "<br>Failed : "+failed+
-    "<br>Success Rate : "+success.toFixed(1)+"%";
+        "Total Tasks : "+(totalTasks+failed)+
+        "<br>Allocated : "+totalTasks+
+        "<br>Failed : "+failed+
+        "<br>Success Rate : "+success.toFixed(1)+"%";
 }
 
 
 /* GAUGE */
 
-let gauge=
-document.getElementById("gauge");
+let gauge=document.getElementById("gauge");
+if(gauge) {
+    let grade="C";
+    if(smartScore>90)
+        grade="A";
+    else if(smartScore>75)
+        grade="B";
 
-let grade="C";
+    if(smartScore>85)
+        gauge.style.borderColor="#22c55e";
+    else if(smartScore>70)
+        gauge.style.borderColor="#f59e0b";
+    else
+        gauge.style.borderColor="#ef4444";
 
-if(smartScore>90)
-grade="A";
-
-else if(smartScore>75)
-grade="B";
-
-if(smartScore>85)
-gauge.style.borderColor="#22c55e";
-
-else if(smartScore>70)
-gauge.style.borderColor="#f59e0b";
-
-else
-gauge.style.borderColor="#ef4444";
-
-gauge.innerHTML=
-
-smartScore+
-
-"<br><small>Smart Score</small>"+
-
-"<br><small>Grade "+grade+"</small>";
+    gauge.innerHTML=smartScore+"<br><small>Smart Score</small>"+"<br><small>Grade "+grade+"</small>";
+}
 
 
 /* ACTIVITY LOG */
 
-let log=
-document.getElementById("log");
-
-log.innerHTML=
-
-"● System initialized<br>"+
-
-"● Resources processed : "+data.resources.length+"<br>"+
-
-"● Tasks allocated<br>"+
-
-"● Efficiency calculated<br>"+
-
-"● Optimization ready";
+let log=document.getElementById("log");
+if(log) {
+    log.innerHTML=
+        "● System initialized<br>"+
+        "● Resources processed : "+data.resources.length+"<br>"+
+        "● Tasks allocated<br>"+
+        "● Efficiency calculated<br>"+
+        "● Optimization ready";
+}
 
 
 let compare=
@@ -651,9 +665,10 @@ document.getElementById("compareTable");
 
 if(compare){
 
-compare.innerHTML=
+// Rebuild table completely with fresh HTML
+let tableHTML = "<tr><th>Resource</th><th>Capacity</th><th>Load</th><th>Utilization</th><th>Status</th></tr>";
 
-"<tr><th>Resource</th><th>Capacity</th><th>Load</th><th>Utilization</th><th>Status</th></tr>";
+if(data.resources && data.resources.length>0){
 
 let sorted=[...data.resources];
 
@@ -669,19 +684,19 @@ status="Critical";
 else if(r.utilization>60)
 status="Moderate";
 
-let row=compare.insertRow();
-
-row.insertCell(0).innerText=r.id;
-
-row.insertCell(1).innerText=r.capacity;
-
-row.insertCell(2).innerText=r.load;
-
-row.insertCell(3).innerText=r.utilization+"%";
-
-row.insertCell(4).innerText=status;
+tableHTML += "<tr>";
+tableHTML += "<td>"+r.id+"</td>";
+tableHTML += "<td>"+r.capacity+"</td>";
+tableHTML += "<td>"+r.load+"</td>";
+tableHTML += "<td>"+r.utilization+"%</td>";
+tableHTML += "<td>"+status+"</td>";
+tableHTML += "</tr>";
 
 });
+
+}
+
+compare.innerHTML = tableHTML;
 
 }
 

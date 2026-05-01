@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OPTIMAQ Import Flow Test</title>
+    <style>
+        body { font-family: Arial; margin: 20px; background: #f5f5f5; }
+        .test-result { margin: 10px 0; padding: 10px; border-left: 4px solid #ccc; background: white; }
+        .pass { border-left-color: #22c55e; background: #f0fdf4; }
+        .fail { border-left-color: #ef4444; background: #fef2f2; }
+        .warning { border-left-color: #f59e0b; background: #fffbeb; }
+        code { background: #f0f0f0; padding: 2px 6px; border-radius: 3px; }
+        pre { background: #f0f0f0; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>OPTIMAQ Import Flow Test</h1>
+    <div id="results"></div>
+    
+    <script src="script.js"></script>
+    <script>
+        const results = [];
+        
+        function test(name, fn) {
+            try {
+                fn();
+                results.push({ name, status: 'pass', message: '✓ Passed' });
+            } catch (err) {
+                results.push({ name, status: 'fail', message: '✗ ' + err.message });
+            }
+        }
+        
+        function warn(name, message) {
+            results.push({ name, status: 'warning', message: '⚠️  ' + message });
+        }
+        
+        // Test 1: Import function exists
+        test('Import function exists', () => {
+            if (typeof importDataset !== 'function') throw new Error('importDataset is not a function');
+        });
+        
+        // Test 2: Basic import
+        test('Basic import with test data', () => {
+            const testData = [
+                { id: 'Server_01', capacity: 100, load: 85, tasks: ['Web', 'API'] },
+                { id: 'Server_02', capacity: 100, load: 60, tasks: ['Database'] }
+            ];
+            const result = importDataset(testData, 'Test', 'test');
+            if (!result.success) throw new Error(result.error);
+            if (result.resourceCount !== 2) throw new Error('Expected 2 resources, got ' + result.resourceCount);
+        });
+        
+        // Test 3: Check localStorage
+        test('Resources saved to localStorage', () => {
+            const stored = localStorage.getItem('optimaq_resources');
+            if (!stored) throw new Error('Nothing saved to localStorage');
+            const parsed = JSON.parse(stored);
+            if (!Array.isArray(parsed)) throw new Error('Stored data is not an array');
+            if (parsed.length < 2) throw new Error('Expected at least 2 resources');
+        });
+        
+        // Test 4: Load from storage
+        test('Load resources from localStorage', () => {
+            resources = [];
+            loadResourcesFromStorage();
+            if (resources.length < 2) throw new Error('Failed to load resources from storage');
+        });
+        
+        // Test 5: Verify data integrity
+        test('Data integrity after load', () => {
+            resources.forEach((r, i) => {
+                if (!r.id) throw new Error(`Resource ${i} missing id`);
+                if (typeof r.capacity !== 'number') throw new Error(`Resource ${r.id} capacity is not a number`);
+                if (typeof r.load !== 'number') throw new Error(`Resource ${r.id} load is not a number`);
+                if (!Array.isArray(r.tasks)) throw new Error(`Resource ${r.id} tasks is not an array`);
+                if (typeof r.utilization !== 'number') throw new Error(`Resource ${r.id} utilization is not a number`);
+            });
+        });
+        
+        // Test 6: CSV Import
+        test('CSV parsing', () => {
+            const csv = `id,capacity,load,tasks\nTest1,100,80,"Task1,Task2"\nTest2,50,25,"Task3"`;
+            const data = parseCSV(csv);
+            if (data.length !== 2) throw new Error('Expected 2 records from CSV');
+            if (data[0].tasks !== '"Task1,Task2"') warn('CSV parsing', 'Quoted fields need normalization: ' + data[0].tasks);
+        });
+        
+        // Test 7: CSV Import with normalization
+        test('CSV import with normalization', () => {
+            const csv = `id,capacity,load,tasks\nTestRes,100,80,Task1`;
+            const data = parseCSV(csv);
+            const result = importDataset(data, 'CSV Test', 'csv');
+            if (!result.success) throw new Error(result.error);
+        });
+        
+        // Test 8: loadDataFromMemory generates data correctly
+        test('loadDataFromMemory generates data', () => {
+            resources = [
+                { id: 'R1', capacity: 100, load: 75, tasks: ['T1'], utilization: 75 },
+                { id: 'R2', capacity: 100, load: 50, tasks: ['T2'], utilization: 50 }
+            ];
+            
+            // Mock DOM elements
+            window.mockRendered = false;
+            const originalRenderAll = window.renderAll;
+            window.renderAll = function(data) {
+                window.mockRendered = true;
+                if (!data.resources) throw new Error('No resources in data');
+                if (data.totalCapacity !== 200) throw new Error('Wrong totalCapacity: ' + data.totalCapacity);
+                if (data.efficiency !== 63) throw new Error('Wrong efficiency: ' + data.efficiency);
+            };
+            
+            loadDataFromMemory();
+            
+            if (!window.mockRendered) throw new Error('renderAll was not called');
+            window.renderAll = originalRenderAll;
+        });
+        
+        // Test 9: getDatasetInfo works
+        test('getDatasetInfo function', () => {
+            const info = getDatasetInfo();
+            if (!info.name) throw new Error('Missing dataset name');
+            if (!info.type) throw new Error('Missing dataset type');
+            if (typeof info.resourceCount !== 'number') throw new Error('Invalid resource count type');
+        });
+        
+        // Test 10: Sample hospital dataset
+        test('Sample hospital dataset', () => {
+            const hospitalData = [
+                { id: 'ICU_Ward', capacity: 20, load: 18, tasks: ['Patient_Care', 'Monitoring'] },
+                { id: 'ER_Ward', capacity: 15, load: 12, tasks: ['Emergency_Response'] }
+            ];
+            const result = importDataset(hospitalData, 'Hospital', 'hospital');
+            if (!result.success) throw new Error(result.error);
+            if (result.resourceCount !== 2) throw new Error('Expected 2 resources');
+        });
+        
+        // Display results
+        function displayResults() {
+            const container = document.getElementById('results');
+            let html = '';
+            let passCount = 0, failCount = 0, warnCount = 0;
+            
+            results.forEach(r => {
+                if (r.status === 'pass') passCount++;
+                else if (r.status === 'fail') failCount++;
+                else warnCount++;
+                
+                html += `<div class="test-result ${r.status}">
+                    <strong>${r.name}</strong><br>
+                    ${r.message}
+                </div>`;
+            });
+            
+            const summary = `<h2>Test Summary</h2>
+                <div style="padding: 15px; background: white; border-radius: 4px; margin: 15px 0;">
+                    <span style="color: #22c55e; font-weight: bold;">✓ Passed: ${passCount}</span> | 
+                    <span style="color: #ef4444; font-weight: bold;">✗ Failed: ${failCount}</span> | 
+                    <span style="color: #f59e0b; font-weight: bold;">⚠️  Warnings: ${warnCount}</span>
+                </div>`;
+            
+            container.innerHTML = summary + html;
+        }
+        
+        // Run tests on load
+        setTimeout(displayResults, 100);
+    </script>
+</body>
+</html>
