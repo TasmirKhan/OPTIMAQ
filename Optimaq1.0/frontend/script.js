@@ -966,3 +966,42 @@ document
 .classList.remove("showLoader");
 
 }
+
+function getMockAiInsights() {
+    return {
+        summary: 'CPU utilization is consistently high during peak hours. Storage is over-provisioned in 2 clusters. Network latency spikes are intermittent but rising.',
+        recommendations: [
+            'Enable auto-scaling for peak-hour compute pools.',
+            'Storage allocation can be reduced by 18% on low-utilization nodes.',
+            'Network latency spikes detected; prioritize traffic shaping and edge caching.',
+            'Predicted bottleneck in API gateway within next 24 hours.',
+            'Rebalance high-load tasks to moderate nodes to improve efficiency.'
+        ]
+    };
+}
+
+function renderAiAdvisor() {
+    const summaryEl = document.getElementById('aiSummaryText');
+    const recoEl = document.getElementById('aiRecoList');
+    if (!summaryEl || !recoEl) return;
+    const insights = getMockAiInsights();
+    summaryEl.textContent = insights.summary;
+    recoEl.innerHTML = insights.recommendations.map(r => `<li>${r}</li>`).join('');
+    const chat = document.getElementById('aiChatLog');
+    if (chat && !chat.children.length) {
+        chat.innerHTML = '<div class="chat-msg ai">AI: I analyzed your dataset and prepared recommendations. Ask me for anomaly details or scaling strategy.</div>';
+    }
+}
+
+function askAiAdvisor(event) {
+    event.preventDefault();
+    const input = document.getElementById('aiChatInput');
+    const log = document.getElementById('aiChatLog');
+    if (!input || !log) return;
+    const q = input.value.trim();
+    if (!q) return;
+    log.innerHTML += `<div class="chat-msg user">You: ${q}</div>`;
+    log.innerHTML += '<div class="chat-msg ai">AI: Based on current telemetry, optimize compute autoscaling and rebalance top 3 overloaded resources first.</div>';
+    input.value = '';
+    log.scrollTop = log.scrollHeight;
+}
