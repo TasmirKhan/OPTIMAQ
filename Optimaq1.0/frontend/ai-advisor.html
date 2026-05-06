@@ -1,35 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI Insights Engine - OPTIMAQ</title>
-  <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-</head>
-<body>
-<nav class="navbar"><div class="nav-container"><div class="nav-logo"><i class="fas fa-cogs"></i><span>OPTIMAQ</span></div><ul class="nav-menu"><li><a href="index.html">Home</a></li><li><a href="dashboard.html">Dashboard</a></li><li><a href="ai-advisor.html" class="active">AI Advisor</a></li><li><a href="resources.html">Resources</a></li><li><a href="analytics.html">Analytics</a></li><li><a href="import-data.html">Import</a></li></ul><div class="nav-actions"><a id="authButton" class="nav-auth" href="login.html">Login</a></div><button class="darkBtn" onclick="toggleDark()">Theme</button></div></nav>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>AI Advisor - OPTIMAQ</title><link rel="stylesheet" href="style.css"></head><body>
+<nav class="navbar"><div class="nav-container"><div class="nav-logo"><span>OPTIMAQ</span></div><ul class="nav-menu"><li><a href="index.html">Home</a></li><li><a href="dashboard.html">Dashboard</a></li><li><a class="active" href="ai-advisor.html">AI Advisor</a></li><li><a href="analytics.html">Analytics</a></li></ul><div class="nav-actions"><a id="authButton" class="nav-auth" href="login.html">Login</a></div></div></nav>
 <main class="container ai-layout fade-in">
-  <section class="ai-left panel">
-    <h2>Dataset Intelligence</h2>
-    <div class="kpi-grid">
-      <article class="kpi-card"><p>Optimization Score</p><h3 id="aiOptScore">87</h3><span class="badge success">+6%</span></article>
-      <article class="kpi-card"><p>Anomalies</p><h3 id="aiAnomaly">3</h3><span class="badge warning">Needs review</span></article>
-      <article class="kpi-card"><p>Predicted Bottlenecks</p><h3 id="aiBottlenecks">2</h3><span class="badge">Next 24h</span></article>
-      <article class="kpi-card"><p>AI Confidence</p><h3 id="aiConfidence">92%</h3><span class="badge">High</span></article>
-    </div>
-    <div class="panel"><h3>AI Summary</h3><p id="aiSummaryText">Analyzing dataset...</p></div>
-    <div class="panel"><h3>Recommendations</h3><ul id="aiRecoList" class="clean-list"></ul></div>
-  </section>
-  <section class="ai-right panel">
-    <h2>AI Advisor Chat</h2>
-    <div id="aiChatLog" class="chat-log"></div>
-    <form class="chat-form" onsubmit="askAiAdvisor(event)">
-      <input id="aiChatInput" class="input-field" placeholder="Ask about utilization, anomalies, bottlenecks..." />
-      <button class="btn-primary" type="submit">Ask AI</button>
-    </form>
-  </section>
-</main>
-<script src="script.js"></script>
-<script>document.addEventListener('DOMContentLoaded',()=>{requireLogin();renderAiAdvisor();});</script>
-</body></html>
+<section class="panel"><h2>AI Insights Engine</h2><p id="aiSummaryText">Analyzing dataset...</p>
+<div class="kpi-grid">
+<article class="kpi-card"><p>Optimization Score</p><h3 id="aiOptScore">--</h3></article>
+<article class="kpi-card"><p>Confidence</p><h3 id="aiConfidence">--</h3></article>
+<article class="kpi-card"><p>Risk Level</p><h3 id="aiRisk">--</h3></article>
+<article class="kpi-card"><p>Optimization Potential</p><h3 id="aiPotential">--</h3></article>
+</div>
+<div class="panel"><h3>Prioritized Recommendations</h3><ul id="aiRecoList" class="clean-list"></ul></div>
+<div class="panel"><h3>Anomaly Alerts</h3><ul id="aiAnomalyList" class="clean-list"></ul></div>
+</section>
+<section class="panel"><h2>Advisor Chat</h2><div id="aiThinking" class="thinking" style="display:none;">Analyzing dataset... Generating insights... Detecting anomalies...</div><div id="aiChatLog" class="chat-log"></div><form class="chat-form" onsubmit="askAiAdvisor(event)"><input id="aiChatInput" class="input-field" placeholder="Ask: where are bottlenecks, what to scale, risk?"/><button class="btn-primary">Ask</button></form><button class="btn-primary" onclick="downloadAiReport()">Download AI Report</button></section>
+</main><script src="script.js"></script><script>document.addEventListener('DOMContentLoaded',()=>{requireLogin();renderAiAdvisor();});</script></body></html>

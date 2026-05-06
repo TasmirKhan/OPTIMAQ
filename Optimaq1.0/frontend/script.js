@@ -967,41 +967,78 @@ document
 
 }
 
-function getMockAiInsights() {
-    return {
-        summary: 'CPU utilization is consistently high during peak hours. Storage is over-provisioned in 2 clusters. Network latency spikes are intermittent but rising.',
-        recommendations: [
-            'Enable auto-scaling for peak-hour compute pools.',
-            'Storage allocation can be reduced by 18% on low-utilization nodes.',
-            'Network latency spikes detected; prioritize traffic shaping and edge caching.',
-            'Predicted bottleneck in API gateway within next 24 hours.',
-            'Rebalance high-load tasks to moderate nodes to improve efficiency.'
-        ]
-    };
+
+
+function deriveAiMetricsFromResources(dataResources) {
+    const rows = Array.isArray(dataResources) ? dataResources : [];
+    const util = rows.map(r => Number(r.utilization ?? ((Number(r.load)||0)/(Math.max(Number(r.capacity)||1,1))*100)) || 0);
+    const avg = util.length ? util.reduce((a,b)=>a+b,0)/util.length : 0;
+    const high = util.filter(v=>v>85).length;
+    const low = util.filter(v=>v<30).length;
+    const spikes = util.filter(v=>v>avg+20).length;
+    const missing = rows.filter(r=>!r.id || r.capacity==null || r.load==null).length;
+    const score = Math.max(35, Math.min(98, Math.round(100 - high*8 - spikes*5 - missing*4 + low*2)));
+    const confidence = Math.max(70, Math.min(97, 92 - missing*4 + Math.min(rows.length,10)/3));
+    const risk = high>2 || spikes>2 ? 'High' : (high>0 || spikes>0 ? 'Medium' : 'Low');
+    const potential = avg>75 || low>1 ? 'High' : (avg>55 ? 'Medium' : 'Low');
+    return {rows,avg,high,low,spikes,missing,score,confidence:Math.round(confidence),risk,potential};
+}
+
+function buildAiRecommendations(m) {
+    const rec=[]; const an=[];
+    if (m.high>0) { rec.push(['Critical', `${m.high} resources exceed 85% utilization. Enable autoscaling and rebalance workloads immediately.`]); an.push('High utilization pressure detected in compute pool.'); }
+    if (m.low>0) rec.push(['Important', `${m.low} resources are underutilized (<30%). Consolidate or reduce allocation to cut waste.`]);
+    if (m.spikes>0) { rec.push(['Important', `Detected ${m.spikes} unusual utilization spikes. Configure burst limits and peak-hour policies.`]); an.push('Sudden traffic/resource spike pattern detected.'); }
+    if (m.missing>0) { rec.push(['Suggested', `${m.missing} records have incomplete values. Improve data quality for better forecasts.`]); an.push('Missing value anomalies may reduce prediction quality.'); }
+    rec.push(['Suggested', `Current average utilization is ${m.avg.toFixed(1)}%. Target 60-75% range for stable efficiency.`]);
+    if (!an.length) an.push('No critical anomalies found. Environment is stable.');
+    return {rec,an};
 }
 
 function renderAiAdvisor() {
-    const summaryEl = document.getElementById('aiSummaryText');
-    const recoEl = document.getElementById('aiRecoList');
-    if (!summaryEl || !recoEl) return;
-    const insights = getMockAiInsights();
-    summaryEl.textContent = insights.summary;
-    recoEl.innerHTML = insights.recommendations.map(r => `<li>${r}</li>`).join('');
-    const chat = document.getElementById('aiChatLog');
-    if (chat && !chat.children.length) {
-        chat.innerHTML = '<div class="chat-msg ai">AI: I analyzed your dataset and prepared recommendations. Ask me for anomaly details or scaling strategy.</div>';
-    }
+    const m=deriveAiMetricsFromResources(resources);
+    const x=buildAiRecommendations(m);
+    const summaryTemplates=[
+      `Dataset analysis indicates ${m.avg.toFixed(1)}% average utilization with ${m.high} high-pressure nodes and ${m.low} underutilized nodes.`,
+      `Operational review shows ${m.spikes} spike events and risk level ${m.risk.toLowerCase()}. Optimization potential is ${m.potential.toLowerCase()}.`,
+      `AI assessment found ${m.missing} data-quality gaps; confidence remains ${m.confidence}% based on available telemetry.`
+    ];
+    const summaryEl=document.getElementById('aiSummaryText'); if(summaryEl) summaryEl.textContent=summaryTemplates.join(' ');
+    const map={aiOptScore:m.score,aiConfidence:`${m.confidence}%`,aiRisk:m.risk,aiPotential:m.potential};
+    Object.entries(map).forEach(([id,v])=>{const el=document.getElementById(id); if(el) el.textContent=v;});
+    const reco=document.getElementById('aiRecoList'); if(reco) reco.innerHTML=x.rec.map(([p,t])=>`<li><strong>${p}:</strong> ${t}</li>`).join('');
+    const ano=document.getElementById('aiAnomalyList'); if(ano) ano.innerHTML=x.an.map(a=>`<li>${a}</li>`).join('');
+    const log=document.getElementById('aiChatLog'); if(log && !log.children.length) log.innerHTML='<div class="chat-msg ai">AI: Analysis ready. Ask about risk, anomalies, scaling, or efficiency.</div>';
 }
 
-function askAiAdvisor(event) {
-    event.preventDefault();
-    const input = document.getElementById('aiChatInput');
-    const log = document.getElementById('aiChatLog');
-    if (!input || !log) return;
-    const q = input.value.trim();
-    if (!q) return;
-    log.innerHTML += `<div class="chat-msg user">You: ${q}</div>`;
-    log.innerHTML += '<div class="chat-msg ai">AI: Based on current telemetry, optimize compute autoscaling and rebalance top 3 overloaded resources first.</div>';
-    input.value = '';
-    log.scrollTop = log.scrollHeight;
+function aiAnswerForQuestion(q,m){
+    const t=q.toLowerCase();
+    if(t.includes('risk')) return `Current risk level is ${m.risk}. High-pressure: ${m.high}, spikes: ${m.spikes}.`;
+    if(t.includes('scale')||t.includes('autoscale')) return m.high>0?`Scale up hot resources and enable autoscaling for peak windows.`:`No urgent scale-up needed; maintain current footprint and monitor trends.`;
+    if(t.includes('anomal')) return `Detected anomalies: ${m.spikes} spike patterns, ${m.missing} missing-value issues.`;
+    if(t.includes('efficien')) return `Efficiency score is ${m.score}/100 with ${m.avg.toFixed(1)}% average utilization.`;
+    return `Based on dataset telemetry, prioritize workload rebalance and keep utilization in 60-75% operating range.`;
+}
+
+function askAiAdvisor(event){
+    event.preventDefault(); const i=document.getElementById('aiChatInput'),log=document.getElementById('aiChatLog'),thinking=document.getElementById('aiThinking');
+    if(!i||!log) return; const q=i.value.trim(); if(!q) return;
+    log.innerHTML += `<div class="chat-msg user">You: ${q}</div>`; i.value='';
+    if(thinking) thinking.style.display='block';
+    const m=deriveAiMetricsFromResources(resources);
+    setTimeout(()=>{ if(thinking) thinking.style.display='none'; log.innerHTML += `<div class="chat-msg ai">AI: ${aiAnswerForQuestion(q,m)}</div>`; log.scrollTop=log.scrollHeight; }, 700);
+}
+
+function downloadAiReport(){
+    const m=deriveAiMetricsFromResources(resources),x=buildAiRecommendations(m);
+    const text=`OPTIMAQ AI REPORT
+Score: ${m.score}
+Confidence: ${m.confidence}%
+Risk: ${m.risk}
+Potential: ${m.potential}
+
+Recommendations:
+- ${x.rec.map(r=>`[${r[0]}] ${r[1]}`).join('
+- ')}`;
+    const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type:'text/plain'})); a.download='ai_insights_report.txt'; a.click();
 }
