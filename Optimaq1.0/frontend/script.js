@@ -239,9 +239,36 @@ function renderAuthButton() {
     }
 }
 
+
+function getSharedWorkspaceState() {
+    const datasetName = localStorage.getItem(DATASET_NAME_KEY) || 'Default Dataset';
+    const datasetType = localStorage.getItem(DATASET_TYPE_KEY) || 'generic';
+    const storedResources = localStorage.getItem('optimaq_resources');
+    const resourceCount = storedResources ? JSON.parse(storedResources).length : resources.length;
+    const optimized = localStorage.getItem('optimaq_last_optimization');
+    return { datasetName, datasetType, resourceCount, hasOptimization: !!optimized };
+}
+
+function renderGlobalWorkspaceBanner() {
+    const nav = document.querySelector('.navbar');
+    if (!nav || document.getElementById('workspaceBanner')) return;
+    const state = getSharedWorkspaceState();
+    const banner = document.createElement('section');
+    banner.id = 'workspaceBanner';
+    banner.className = 'workspace-banner';
+    banner.innerHTML = `
+        <div class="workspace-item"><strong>Dataset:</strong> ${state.datasetName}</div>
+        <div class="workspace-item"><strong>Type:</strong> ${state.datasetType}</div>
+        <div class="workspace-item"><strong>Resources:</strong> ${state.resourceCount}</div>
+        <div class="workspace-item"><strong>Status:</strong> ${state.hasOptimization ? 'Optimization available' : 'Awaiting optimization'}</div>
+    `;
+    nav.insertAdjacentElement('afterend', banner);
+}
+
 function initGlobal() {
     loadResourcesFromStorage();
     renderAuthButton();
+    renderGlobalWorkspaceBanner();
 
     let savedTheme = localStorage.getItem('optimaqTheme');
     if (savedTheme === 'dark') {
@@ -938,4 +965,43 @@ document
 .getElementById("loader")
 .classList.remove("showLoader");
 
+}
+
+function getMockAiInsights() {
+    return {
+        summary: 'CPU utilization is consistently high during peak hours. Storage is over-provisioned in 2 clusters. Network latency spikes are intermittent but rising.',
+        recommendations: [
+            'Enable auto-scaling for peak-hour compute pools.',
+            'Storage allocation can be reduced by 18% on low-utilization nodes.',
+            'Network latency spikes detected; prioritize traffic shaping and edge caching.',
+            'Predicted bottleneck in API gateway within next 24 hours.',
+            'Rebalance high-load tasks to moderate nodes to improve efficiency.'
+        ]
+    };
+}
+
+function renderAiAdvisor() {
+    const summaryEl = document.getElementById('aiSummaryText');
+    const recoEl = document.getElementById('aiRecoList');
+    if (!summaryEl || !recoEl) return;
+    const insights = getMockAiInsights();
+    summaryEl.textContent = insights.summary;
+    recoEl.innerHTML = insights.recommendations.map(r => `<li>${r}</li>`).join('');
+    const chat = document.getElementById('aiChatLog');
+    if (chat && !chat.children.length) {
+        chat.innerHTML = '<div class="chat-msg ai">AI: I analyzed your dataset and prepared recommendations. Ask me for anomaly details or scaling strategy.</div>';
+    }
+}
+
+function askAiAdvisor(event) {
+    event.preventDefault();
+    const input = document.getElementById('aiChatInput');
+    const log = document.getElementById('aiChatLog');
+    if (!input || !log) return;
+    const q = input.value.trim();
+    if (!q) return;
+    log.innerHTML += `<div class="chat-msg user">You: ${q}</div>`;
+    log.innerHTML += '<div class="chat-msg ai">AI: Based on current telemetry, optimize compute autoscaling and rebalance top 3 overloaded resources first.</div>';
+    input.value = '';
+    log.scrollTop = log.scrollHeight;
 }
