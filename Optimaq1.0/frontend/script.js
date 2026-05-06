@@ -1038,7 +1038,6 @@ Risk: ${m.risk}
 Potential: ${m.potential}
 
 Recommendations:
-- ${x.rec.map(r=>`[${r[0]}] ${r[1]}`).join('
-- ')}`;
+- ${x.rec.map(r=>`[${r[0]}] ${r[1]}`).join('\n- ')}`;
     const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type:'text/plain'})); a.download='ai_insights_report.txt'; a.click();
 }
