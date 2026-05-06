@@ -239,9 +239,36 @@ function renderAuthButton() {
     }
 }
 
+
+function getSharedWorkspaceState() {
+    const datasetName = localStorage.getItem(DATASET_NAME_KEY) || 'Default Dataset';
+    const datasetType = localStorage.getItem(DATASET_TYPE_KEY) || 'generic';
+    const storedResources = localStorage.getItem('optimaq_resources');
+    const resourceCount = storedResources ? JSON.parse(storedResources).length : resources.length;
+    const optimized = localStorage.getItem('optimaq_last_optimization');
+    return { datasetName, datasetType, resourceCount, hasOptimization: !!optimized };
+}
+
+function renderGlobalWorkspaceBanner() {
+    const nav = document.querySelector('.navbar');
+    if (!nav || document.getElementById('workspaceBanner')) return;
+    const state = getSharedWorkspaceState();
+    const banner = document.createElement('section');
+    banner.id = 'workspaceBanner';
+    banner.className = 'workspace-banner';
+    banner.innerHTML = `
+        <div class="workspace-item"><strong>Dataset:</strong> ${state.datasetName}</div>
+        <div class="workspace-item"><strong>Type:</strong> ${state.datasetType}</div>
+        <div class="workspace-item"><strong>Resources:</strong> ${state.resourceCount}</div>
+        <div class="workspace-item"><strong>Status:</strong> ${state.hasOptimization ? 'Optimization available' : 'Awaiting optimization'}</div>
+    `;
+    nav.insertAdjacentElement('afterend', banner);
+}
+
 function initGlobal() {
     loadResourcesFromStorage();
     renderAuthButton();
+    renderGlobalWorkspaceBanner();
 
     let savedTheme = localStorage.getItem('optimaqTheme');
     if (savedTheme === 'dark') {
