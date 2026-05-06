@@ -6,9 +6,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .dashboard-shell { max-width: 1300px; margin: 0 auto; padding: 18px; }
+        .dashboard-hero { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; margin: 14px 0 18px; }
+        .dashboard-title h1 { margin:0; font-size: 28px; }
+        .dashboard-title p { margin:6px 0 0; opacity:.85; }
+        .ops-panel { display:grid; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap:10px; width:100%; }
+        .ops-chip { padding:12px; border-radius:12px; border:1px solid var(--border); background:var(--surface); box-shadow: var(--shadow); }
+        .ops-chip .label { font-size:12px; opacity:.8; }
+        .ops-chip .value { font-weight:700; margin-top:4px; }
+        .section-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; box-shadow:var(--shadow); padding:18px; margin-top:18px; }
+        .section-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:10px; flex-wrap:wrap; }
+    </style>
 </head>
 <body>
-    <!-- Navigation -->
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-logo">
@@ -35,227 +46,141 @@
         <p>Running AI Optimization...</p>
     </div>
 
-    <!-- HEADER -->
-    <div class="header">
-        <h1>OPTIMAQ Resource Optimizer</h1>
-        <div class="header-info">
-            <p>Version 1.0 | AI Resource Optimization Engine</p>
-            <p>Dataset: <span id="currentDataset">Default Dataset</span> | Resources Loaded: <span id="loadedResources">0</span></p>
-        </div>
-    </div>
+    <main class="dashboard-shell">
+        <section class="dashboard-hero">
+            <div class="dashboard-title">
+                <h1><i class="fas fa-chart-pie"></i> Resource Optimization Control Center</h1>
+                <p>Dataset: <strong id="currentDataset">Default Dataset</strong> | Loaded Resources: <strong id="loadedResources">0</strong></p>
+            </div>
+            <div class="ops-panel">
+                <div class="ops-chip"><div class="label">Environment</div><div class="value">Production v1.0</div></div>
+                <div class="ops-chip"><div class="label">Optimization State</div><div class="value" id="smartscore">--</div></div>
+                <div class="ops-chip"><div class="label">Current Grade</div><div class="value" id="scoreGrade">--</div></div>
+            </div>
+        </section>
 
-    <!-- QUICK STATS SECTION -->
-    <div class="quick-stats">
-        <div class="stat-card stat-primary">
-            <div class="stat-icon"><i class="fas fa-server"></i></div>
-            <div class="stat-info">
-                <div class="stat-value" id="quickResources">0</div>
-                <div class="stat-label">Resources</div>
-            </div>
-        </div>
-        <div class="stat-card stat-success">
-            <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
-            <div class="stat-info">
-                <div class="stat-value" id="quickOptimal">0</div>
-                <div class="stat-label">Optimal</div>
-            </div>
-        </div>
-        <div class="stat-card stat-warning">
-            <div class="stat-icon"><i class="fas fa-exclamation-circle"></i></div>
-            <div class="stat-info">
-                <div class="stat-value" id="quickModerate">0</div>
-                <div class="stat-label">Moderate</div>
-            </div>
-        </div>
-        <div class="stat-card stat-danger">
-            <div class="stat-icon"><i class="fas fa-alert-circle"></i></div>
-            <div class="stat-info">
-                <div class="stat-value" id="quickCritical">0</div>
-                <div class="stat-label">Critical</div>
-            </div>
-        </div>
-    </div>
+        <section class="quick-stats">
+            <div class="stat-card stat-primary"><div class="stat-icon"><i class="fas fa-server"></i></div><div class="stat-info"><div class="stat-value" id="quickResources">0</div><div class="stat-label">Resources</div></div></div>
+            <div class="stat-card stat-success"><div class="stat-icon"><i class="fas fa-check-circle"></i></div><div class="stat-info"><div class="stat-value" id="quickOptimal">0</div><div class="stat-label">Optimal</div></div></div>
+            <div class="stat-card stat-warning"><div class="stat-icon"><i class="fas fa-exclamation-circle"></i></div><div class="stat-info"><div class="stat-value" id="quickModerate">0</div><div class="stat-label">Moderate</div></div></div>
+            <div class="stat-card stat-danger"><div class="stat-icon"><i class="fas fa-alert-circle"></i></div><div class="stat-info"><div class="stat-value" id="quickCritical">0</div><div class="stat-label">Critical</div></div></div>
+        </section>
 
-    <!-- ALERTS SECTION -->
-    <div class="alerts-section" id="alertsSection" style="display:none;">
-        <h2><i class="fas fa-bell"></i> System Alerts</h2>
-        <div id="alertsContainer" class="alerts-container"></div>
-    </div>
+        <section class="section-card" id="alertsSection" style="display:none;">
+            <div class="section-head"><h2><i class="fas fa-bell"></i> Live System Alerts</h2></div>
+            <div id="alertsContainer" class="alerts-container"></div>
+        </section>
 
-    <!-- MAIN DASHBOARD GRID -->
-    <div class="dashboard-grid">
-        <!-- LEFT COLUMN -->
-        <div class="dashboard-column-left">
-            <!-- Control Panel -->
-            <div class="dashboard-card">
-                <h3><i class="fas fa-plus-circle"></i> Add Resource</h3>
-                <div class="inputPanel">
-                    <input id="rid" placeholder="Resource Name">
-                    <input id="capacityInput" placeholder="Capacity">
-                    <input id="loadInput" placeholder="Load">
-                    <input id="tasksInput" placeholder="Tasks">
-                    <button onclick="addResource()"><i class="fas fa-plus"></i> Add</button>
-                </div>
-            </div>
-
-            <!-- System Health -->
-            <div class="dashboard-card">
-                <h3><i class="fas fa-heartbeat"></i> System Health</h3>
-                <div class="health-panel" id="health">Waiting for analysis...</div>
-                <div id="summary" class="summary-panel">Summary will appear here.</div>
-            </div>
-
-            <!-- Key Metrics -->
-            <div class="dashboard-card metrics-card">
-                <h3><i class="fas fa-chart-line"></i> Key Metrics</h3>
-                <div class="metrics-grid">
-                    <div class="metric">
-                        <div class="metric-value" id="capacity">--</div>
-                        <div class="metric-label">Total Capacity</div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-value" id="load">--</div>
-                        <div class="metric-label">Total Load</div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-value" id="efficiency">--</div>
-                        <div class="metric-label">Efficiency</div>
+        <section class="dashboard-grid">
+            <div class="dashboard-column-left">
+                <div class="dashboard-card">
+                    <h3><i class="fas fa-plus-circle"></i> Add / Update Resource</h3>
+                    <div class="inputPanel">
+                        <input id="rid" placeholder="Resource Name">
+                        <input id="capacityInput" placeholder="Capacity">
+                        <input id="loadInput" placeholder="Load">
+                        <input id="tasksInput" placeholder="Tasks (comma separated)">
+                        <button onclick="addResource()"><i class="fas fa-plus"></i> Save Resource</button>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- CENTER COLUMN -->
-        <div class="dashboard-column-center">
-            <!-- Optimization Score -->
-            <div class="dashboard-card score-card">
-                <h3><i class="fas fa-tachometer-alt"></i> Optimization Score</h3>
-                <div class="score-display">
-                    <div class="gauge" id="gauge">--</div>
-                    <div class="score-details">
-                        <div class="score-item">
-                            <span class="score-label">Smart Score:</span>
-                            <span class="score-value" id="smartscore">--</span>
-                        </div>
-                        <div class="score-item">
-                            <span class="score-label">Grade:</span>
-                            <span class="score-grade" id="scoreGrade">--</span>
-                        </div>
+                <div class="dashboard-card">
+                    <h3><i class="fas fa-heartbeat"></i> System Health Summary</h3>
+                    <div class="health-panel" id="health">Waiting for analysis...</div>
+                    <div id="summary" class="summary-panel">Summary will appear here.</div>
+                </div>
+
+                <div class="dashboard-card metrics-card">
+                    <h3><i class="fas fa-ruler-combined"></i> Key Capacity Metrics</h3>
+                    <div class="metrics-grid">
+                        <div class="metric"><div class="metric-value" id="capacity">--</div><div class="metric-label">Total Capacity</div></div>
+                        <div class="metric"><div class="metric-value" id="load">--</div><div class="metric-label">Total Load</div></div>
+                        <div class="metric"><div class="metric-value" id="efficiency">--</div><div class="metric-label">Efficiency</div></div>
                     </div>
                 </div>
             </div>
 
-            <!-- AI Insights -->
-            <div class="dashboard-card insights-card">
-                <h3><i class="fas fa-brain"></i> AI Insights</h3>
-                <div id="aiInsights" class="insights-panel">Waiting for analysis...</div>
-            </div>
-        </div>
+            <div class="dashboard-column-center">
+                <div class="dashboard-card score-card">
+                    <h3><i class="fas fa-tachometer-alt"></i> Optimization Score</h3>
+                    <div class="score-display">
+                        <div class="gauge" id="gauge">--</div>
+                    </div>
+                </div>
 
-        <!-- RIGHT COLUMN -->
-        <div class="dashboard-column-right">
-            <!-- Recommendations -->
-            <div class="dashboard-card recommendations-card">
-                <h3><i class="fas fa-lightbulb"></i> AI Recommendations</h3>
-                <div id="aiSuggestions" class="recommendations-panel">Run optimization to see recommendations</div>
-            </div>
-
-            <!-- Quick Actions -->
-            <div class="dashboard-card actions-card">
-                <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
-                <div class="actions-grid">
-                    <button onclick="loadData()" class="action-btn action-optimize">
-                        <i class="fas fa-play"></i>
-                        <span>Run Optimization</span>
-                    </button>
-                    <button onclick="exportReport()" class="action-btn action-export">
-                        <i class="fas fa-download"></i>
-                        <span>Export Report</span>
-                    </button>
-                    <button onclick="refreshDashboard()" class="action-btn action-refresh">
-                        <i class="fas fa-sync"></i>
-                        <span>Refresh</span>
-                    </button>
-                    <button onclick="clearAllData()" class="action-btn action-clear">
-                        <i class="fas fa-trash"></i>
-                        <span>Clear Data</span>
-                    </button>
+                <div class="dashboard-card insights-card">
+                    <h3><i class="fas fa-brain"></i> AI Insights</h3>
+                    <div id="aiInsights" class="insights-panel">Waiting for analysis...</div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- RESOURCES -->
-    <div class="section">
-        <div class="resourceHeaderBar">
-            <h2><i class="fas fa-server"></i> Resource Allocation</h2>
-            <input id="searchResource" placeholder="Search resource..." onkeyup="filterResources()">
-        </div>
-        <div id="resources" class="resource-container"></div>
-    </div>
+            <div class="dashboard-column-right">
+                <div class="dashboard-card recommendations-card">
+                    <h3><i class="fas fa-lightbulb"></i> Actionable Recommendations</h3>
+                    <div id="aiSuggestions" class="recommendations-panel">Run optimization to see recommendations</div>
+                </div>
 
-    <!-- RANKING -->
-    <div class="section">
-        <h2><i class="fas fa-trophy"></i> Resource Ranking</h2>
-        <table id="ranking">
-            <tr>
-                <th>Rank</th>
-                <th>Resource</th>
-                <th>Utilization</th>
-            </tr>
-        </table>
-    </div>
+                <div class="dashboard-card actions-card">
+                    <h3><i class="fas fa-bolt"></i> Operations</h3>
+                    <div class="actions-grid">
+                        <button onclick="loadData()" class="action-btn action-optimize"><i class="fas fa-play"></i><span>Run Optimization</span></button>
+                        <button onclick="exportReport()" class="action-btn action-export"><i class="fas fa-download"></i><span>Export Report</span></button>
+                        <button onclick="refreshDashboard()" class="action-btn action-refresh"><i class="fas fa-sync"></i><span>Refresh</span></button>
+                        <button onclick="clearAllData()" class="action-btn action-clear"><i class="fas fa-trash"></i><span>Clear Data</span></button>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-    <div class="section">
-        <h2><i class="fas fa-balance-scale"></i> Top Resource Comparison</h2>
-        <table id="compareTable">
-            <tr>
-                <th>Resource</th>
-                <th>Capacity</th>
-                <th>Load</th>
-                <th>Utilization</th>
-                <th>Status</th>
-            </tr>
-        </table>
-    </div>
+        <section class="section-card">
+            <div class="section-head">
+                <h2><i class="fas fa-server"></i> Resource Allocation</h2>
+                <input id="searchResource" placeholder="Search resource..." onkeyup="filterResources()">
+            </div>
+            <div id="resources" class="resource-container"></div>
+        </section>
 
-    <!-- TASKS -->
-    <div class="section">
-        <h2><i class="fas fa-tasks"></i> Task Distribution</h2>
-        <div id="taskChart"></div>
-    </div>
+        <section class="section-card">
+            <div class="section-head"><h2><i class="fas fa-trophy"></i> Resource Ranking</h2></div>
+            <table id="ranking"><tr><th>Rank</th><th>Resource</th><th>Utilization</th></tr></table>
+        </section>
 
-    <div class="section">
-        <h2><i class="fas fa-chart-bar"></i> Resource Utilization Analytics</h2>
-        <canvas id="utilChart"></canvas>
-    </div>
+        <section class="section-card">
+            <div class="section-head"><h2><i class="fas fa-balance-scale"></i> Top Resource Comparison</h2></div>
+            <table id="compareTable"><tr><th>Resource</th><th>Capacity</th><th>Load</th><th>Utilization</th><th>Status</th></tr></table>
+        </section>
 
-    <!-- BOTTLENECKS -->
-    <div class="section">
-        <h2><i class="fas fa-exclamation-triangle"></i> Bottlenecks</h2>
-        <div id="bottlenecks" class="bottleneck"></div>
-    </div>
+        <section class="section-card">
+            <div class="section-head"><h2><i class="fas fa-tasks"></i> Task Distribution</h2></div>
+            <div id="taskChart"></div>
+        </section>
 
-    <!-- LOG -->
-    <div class="section">
-        <h2><i class="fas fa-history"></i> System Activity</h2>
-        <div class="log" id="log"></div>
-    </div>
+        <section class="section-card">
+            <div class="section-head"><h2><i class="fas fa-chart-bar"></i> Utilization Analytics</h2></div>
+            <canvas id="utilChart"></canvas>
+        </section>
+
+        <section class="section-card">
+            <div class="section-head"><h2><i class="fas fa-exclamation-triangle"></i> Bottlenecks</h2></div>
+            <div id="bottlenecks" class="bottleneck"></div>
+        </section>
+
+        <section class="section-card">
+            <div class="section-head"><h2><i class="fas fa-history"></i> System Activity</h2></div>
+            <div class="log" id="log"></div>
+        </section>
+    </main>
 
     <div id="toast"></div>
 
     <script src="script.js"></script>
     <script>
-        // Dashboard specific initialization
         document.addEventListener('DOMContentLoaded', function() {
             requireLogin();
             loadResourcesFromStorage();
-            
-            // Display dataset info
             const datasetInfo = getDatasetInfo();
             document.getElementById('currentDataset').innerText = datasetInfo.name;
             document.getElementById('loadedResources').innerText = datasetInfo.resourceCount;
-            
             loadDataFromMemory();
         });
     </script>
