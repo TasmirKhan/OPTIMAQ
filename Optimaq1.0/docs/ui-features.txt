@@ -1,0 +1,171 @@
+OPTIMAQ UI DETAILS & FEATURE INVENTORY
+======================================
+Version: 1.0
+Scope: Frontend user interface, navigation, dashboard, analytics views, import flow, authentication, AI advisor, and shared UI system behavior.
+
+1) UI ARCHITECTURE OVERVIEW
+---------------------------
+- Multi-page frontend with shared global styling and behavior.
+- Shared JavaScript runtime (`frontend/script.js`) powers:
+  - login/session behavior,
+  - data import normalization,
+  - dashboard rendering,
+  - resource actions,
+  - theme toggle,
+  - AI advisor logic,
+  - export actions,
+  - workspace context banner.
+- Shared stylesheet (`frontend/style.css`) defines layout, cards, navigation, form, and responsive behavior.
+
+2) CORE PAGES
+-------------
+- index.html (landing / product overview)
+- login.html (authentication gateway)
+- dashboard.html (operations and optimization command center)
+- resources.html (resource management and visibility)
+- analytics.html (analysis and charts)
+- import-data.html (dataset onboarding)
+- ai-advisor.html (AI Insights Engine + conversational assistant)
+- about.html (product details)
+- help.html (quick start and troubleshooting)
+- contact.html (support information)
+
+3) NAVIGATION & GLOBAL EXPERIENCE
+---------------------------------
+- Unified navbar across pages with links to major modules.
+- Auth button updates contextually (Login / Logout) based on session state.
+- Global workspace banner surfaces:
+  - active dataset name,
+  - dataset type,
+  - total resources loaded,
+  - optimization readiness/availability status.
+- Optional theme mode support via localStorage-backed toggle.
+
+4) AUTHENTICATION EXPERIENCE
+----------------------------
+- Simple credential-based login (demo credentials: admin / optimaq123).
+- Session persistence using browser localStorage key.
+- Protected routes/pages enforce login and redirect unauthorized users to login page.
+- Login page includes direct inline guidance and success/error toast feedback.
+
+5) DATA IMPORT & NORMALIZATION
+------------------------------
+- Accepts structured datasets and normalizes schema into consistent resource objects.
+- Handles multiple source field name patterns (id/capacity/load/tasks fallbacks).
+- Supports CSV parsing and line-level normalization helpers.
+- Validation pipeline checks:
+  - non-empty dataset,
+  - valid numeric coercion,
+  - bounded utilization values,
+  - corrected load <= capacity.
+- Imported resources are persisted to localStorage for cross-page continuity.
+
+6) DASHBOARD (OPERATIONS UI)
+----------------------------
+- Professional dashboard layout with modular sections/cards.
+- Key capabilities:
+  - quick KPI cards (resource counts + status buckets),
+  - optimization score + grade display,
+  - system health + executive summary,
+  - AI recommendations and insight panel,
+  - quick actions (run optimization, refresh, export, clear),
+  - resource search and allocation cards,
+  - ranking and comparison tables,
+  - task distribution section,
+  - utilization analytics chart canvas,
+  - bottleneck section,
+  - system activity log,
+  - loader overlay and toasts for operation feedback.
+
+7) RESOURCE OPERATIONS
+----------------------
+- Add resource with validation and duplicate checks.
+- Delete resource entries.
+- Optimize individual resources automatically using utilization logic.
+- Filter resources by live search.
+- Persist all resource edits instantly in localStorage.
+
+8) AI ADVISOR / AI INSIGHTS ENGINE
+----------------------------------
+- Dedicated AI page with split-pane analytics + conversational assistant.
+- Dynamic AI metrics derived from loaded dataset:
+  - average utilization,
+  - high-pressure resource count,
+  - underutilized count,
+  - spike detection,
+  - missing value detection,
+  - optimization score,
+  - confidence estimate,
+  - risk level,
+  - optimization potential.
+- AI summary generation from computed metrics.
+- Prioritized recommendations:
+  - Critical,
+  - Important,
+  - Suggested.
+- Anomaly alert list with context-sensitive flags.
+- Conversational AI behavior:
+  - intent-aware responses (risk, anomalies, scaling, efficiency),
+  - dataset-context responses rather than fixed static replies,
+  - lightweight “thinking/analyzing” state before answers.
+- Downloadable AI report generation (text export).
+
+9) VISUAL DESIGN SYSTEM
+-----------------------
+- Enterprise-oriented monochrome UI treatment:
+  - white primary surfaces,
+  - subtle gray secondary backgrounds,
+  - dark text hierarchy,
+  - restrained border/shadow usage,
+  - minimal visual noise.
+- Componentized styles for:
+  - cards,
+  - tables,
+  - nav,
+  - inputs,
+  - buttons,
+  - alerts,
+  - chat messages,
+  - banners,
+  - responsive containers.
+- Interaction design:
+  - soft hover states,
+  - subtle lift transitions,
+  - focus ring feedback,
+  - lightweight fade/pulse animations.
+
+10) RESPONSIVE BEHAVIOR
+-----------------------
+- Grid and card layouts adapt for desktop/tablet/mobile breakpoints.
+- AI advisor columns collapse to single-column on smaller viewports.
+- Chat forms and nav containers adapt for compact screens.
+- Input and content blocks maintain readable spacing at reduced widths.
+
+11) FEEDBACK & SYSTEM MESSAGING
+-------------------------------
+- Toast notifications for success, warning, and error outcomes.
+- Loader state for optimization operations.
+- Contextual empty/waiting states in insights and analytics sections.
+
+12) EXPORTS & REPORTING
+-----------------------
+- General optimization text report export.
+- AI analysis text report export with score/risk/recommendations summary.
+
+13) DATA CONTINUITY MODEL
+-------------------------
+- LocalStorage keys drive continuity between all pages:
+  - auth state,
+  - resources list,
+  - last optimization payload,
+  - dataset metadata,
+  - theme preference.
+- Enables consistent state visibility and user context throughout app navigation.
+
+14) MAINTAINABILITY NOTES
+-------------------------
+- UI behavior is mostly centralized in `script.js` for easy extension.
+- Styling is centralized in `style.css` (with layered overrides).
+- New modules/pages can reuse existing card/nav/banner/toast patterns.
+
+END OF FILE
