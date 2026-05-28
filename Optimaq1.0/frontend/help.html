@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Help - OPTIMAQ</title>
+    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo"><i class="fas fa-cogs"></i><span>OPTIMAQ</span></div>
+            <ul class="nav-menu">
+                <li><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="resources.html"><i class="fas fa-server"></i> Resources</a></li>
+                <li><a href="analytics.html"><i class="fas fa-chart-line"></i> Analytics</a></li>
+                <li><a href="import-data.html"><i class="fas fa-upload"></i> Import</a></li>
+                <li><a href="about.html"><i class="fas fa-info-circle"></i> About</a></li>
+            </ul>
+            <div class="nav-actions"><a id="authButton" class="nav-auth" href="login.html"><i class="fas fa-sign-in-alt"></i> Login</a></div>
+            <button class="darkBtn" onclick="toggleDark()"><i class="fas fa-moon"></i> Dark Mode</button>
+        </div>
+    </nav>
+
+    <div class="page-header">
+        <h1><i class="fas fa-life-ring"></i> Help Center</h1>
+        <p>Get started quickly with OPTIMAQ</p>
+    </div>
+
+    <div class="container about-section">
+        <div class="about-content">
+            <h2>Quick Start</h2>
+            <ol>
+                <li>Go to <strong>Import</strong> and upload a JSON/CSV file.</li>
+                <li>Open <strong>Dashboard</strong> and click <strong>Run Optimization</strong>.</li>
+                <li>Review insights in <strong>Analytics</strong> and <strong>Resources</strong>.</li>
+            </ol>
+            <h2>Troubleshooting</h2>
+            <ul class="feature-list">
+                <li><i class="fas fa-database"></i> If data is missing, re-import from the Import page.</li>
+                <li><i class="fas fa-sign-in-alt"></i> If redirected, login with admin / optimaq123.</li>
+                <li><i class="fas fa-sync"></i> Use Refresh in Dashboard after importing data.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
