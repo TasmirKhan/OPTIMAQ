@@ -534,15 +534,19 @@ if(table) {
 let chart=document.getElementById("taskChart");
 if(chart) {
     chart.innerHTML="";
-    data.resources.forEach(r=>{
+    const taskResources = Array.isArray(data.resources) ? data.resources : [];
+    const maxTaskCount = Math.max(1, ...taskResources.map(r => Array.isArray(r.tasks) ? r.tasks.length : 0));
+    if (taskResources.length === 0) {
+        chart.innerHTML = "<div class='task-empty'>No task data available</div>";
+    }
+    taskResources.forEach(r=>{
         let bar=document.createElement("div");
         bar.className="barChart";
         let taskCount=Array.isArray(r.tasks) ? r.tasks.length : 0;
-        let calculatedWidth=Math.min(taskCount*45,600);
-        bar.style.width=calculatedWidth+"px";
-        bar.style.flexBasis=calculatedWidth+"px";
+        let fillWidth=Math.max(8, Math.round((taskCount / maxTaskCount) * 100));
+        bar.style.setProperty("--task-fill", fillWidth+"%");
         bar.title=r.id+" : "+taskCount+" tasks";
-        bar.innerText=r.id+" : "+taskCount+" tasks";
+        bar.innerHTML="<span class='task-resource'>"+r.id+"</span><span class='task-count'>"+taskCount+" tasks</span>";
         chart.appendChild(bar);
     });
 }
