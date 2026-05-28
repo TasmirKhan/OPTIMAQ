@@ -2951,3 +2951,17 @@ button:hover,
 }
 
 .progress { background: var(--surface-muted); }
+
+/* Keep comparison table values readable on dark/system themes. */
+#compareTable,
+#compareTable tbody,
+#compareTable tr,
+#compareTable td {
+  background: #ffffff;
+  color: #0f172a;
+}
+
+#compareTable tr:hover td {
+  background: #f8fafc;
+  color: #0f172a;
+}
